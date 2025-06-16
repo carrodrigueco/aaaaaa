@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="es">
+<head> 
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Panel de Control - Gestor de Casos</title>
+  <link rel="stylesheet" href="/src/styles/input.css" />
+</head>
+<body class="pagina-fondo">
+
+    <div v-scope="dashboardGestor">
+ 
+        <!-- Sidebar -->
+        <aside class="w-full md:w-64 bg-[var(--color-fondo-medio)] p-6 shadow-md fixed md:static h-auto md:h-screen">
+        <div class="text-center mb-6">
+            <img v-if="gestor.foto" :src="gestor.foto" alt="Perfil" class="w-20 h-20 rounded-full mx-auto mb-2 object-cover" />
+            <div class="text-lg font-semibold">{{ gestor.nombre }}</div>
+            <div class="text-sm text-[var(--color-texto-secundario)]">{{ gestor.organizacion }}</div>
+            <div class="text-xs mt-1 text-[var(--color-acento-principal)]">Rol: {{ gestor.rol }}</div>
+        </div>
+
+        <nav class="space-y-3">
+            <button class="btn-secundario w-full text-left" @click="vista = 'reportes'">Ver Reportes de Casos</button>
+            <button class="btn-secundario w-full text-left" @click="vista = 'estadisticas'">Ver Estadísticas</button>
+            <button class="btn-secundario w-full text-left text-red-600 hover:text-white hover:bg-red-500" @click="cerrarSesion">Cerrar Sesión</button>
+        </nav>
+        </aside>
+
+        <!-- Contenido Central -->
+        <main class="ml-0 md:ml-64 p-6">
+
+        <!-- Vista Reportes -->
+        <section v-if="vista === 'reportes'">
+            <h1 class="form-titulo mb-6">Lista de Reportes</h1>
+
+            <div v-if="!reporteSeleccionado">
+            <table class="w-full text-sm table-auto bg-white shadow rounded-lg overflow-hidden">
+                <thead class="bg-[var(--color-fondo-medio)] text-left">
+                <tr>
+                    <th class="p-4">ID</th>
+                    <th class="p-4">Estado</th>
+                    <th class="p-4">Fecha</th>
+                    <th class="p-4">Acciones</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr v-for="reporte in reportes" :key="reporte.id" class="border-t hover:bg-gray-50">
+                    <td class="p-4">{{ reporte.id }}</td>
+                    <td class="p-4">{{ reporte.estado }}</td>
+                    <td class="p-4">{{ reporte.fecha }}</td>
+                    <td class="p-4">
+                    <button class="btn-primario py-2 px-4 text-sm" @click="verDetalle(reporte)">Ver Detalles</button>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+            </div>
+
+            <!-- Detalle de Reporte -->
+            <div v-else>
+            <button class="btn-secundario mb-4" @click="reporteSeleccionado = null">← Volver</button>
+            <div class="form-card text-sm">
+                <h2 class="form-titulo text-left">Reporte #{{ reporteSeleccionado.id }}</h2>
+                <p><strong>Fecha:</strong> {{ reporteSeleccionado.fecha }}</p>
+                <p><strong>Estado actual:</strong> {{ reporteSeleccionado.estado }}</p>
+                <p><strong>Descripción:</strong> {{ reporteSeleccionado.descripcion }}</p>
+
+                <div class="form-group mt-4">
+                <label class="form-label">Agregar una nota</label>
+                <textarea v-model="nota" class="form-textarea"></textarea>
+                </div>
+
+                <div class="form-group">
+                <label class="form-label">Cambiar estado</label>
+                <select v-model="nuevoEstado" class="form-select">
+                    <option disabled value="">Selecciona un estado</option>
+                    <option v-for="estado in estados" :value="estado">{{ estado }}</option>
+                </select>
+                </div>
+
+                <div class="flex gap-4 mt-6">
+                <button class="btn-primario" @click="guardarCambios">Notificar Cambio</button>
+                <button class="btn-secundario" @click="imprimir">Imprimir</button>
+                </div>
+            </div>
+            </div>
+        </section>
+
+        <!-- Vista Estadísticas -->
+        <section v-else-if="vista === 'estadisticas'">
+            <h1 class="form-titulo">Estadísticas</h1>
+            <div class="form-card text-sm">
+            <p><strong>Total de reportes:</strong> {{ estadisticas.total }}</p>
+            <p><strong>Reportes cerrados:</strong> {{ estadisticas.cerrados }}</p>
+            <p><strong>Reportes en progreso:</strong> {{ estadisticas.enProgreso }}</p>
+            </div>
+        </section>
+        </main>
+
+    </div>
+  <script src="https://unpkg.com/petite-vue"></script>
+  <script  type="module">
+      import { componente_dashboard } from './components/componente_dashboard.js';
+
+      window.petiteVueApp = PetiteVue.createApp({
+          dashboardGestor: componente_dashboard
+      }).mount();
+
+      console.log("Petite Vue app initialized and mounted.");
+  </script>
+</body>
+</html>

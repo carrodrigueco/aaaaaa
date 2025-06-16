@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Acceso Gestores y Administradores</title>
+  <link rel="stylesheet" href="/src/styles/input.css" />
+</head>
+<body class="pagina-fondo"> 
+
+  <div v-scope="componente_login">
+    <header class="encabezado">
+      <div class="container mx-auto px-4 flex justify-between items-center">
+        <a href="../index.html" class="logo-app">Safereport</a>
+      </div> 
+    </header>
+
+    <main class="flex-grow flex items-center justify-center px-4 py-12">
+      <div class="form-card">
+        <h1 class="form-titulo">Iniciar Sesión</h1>
+
+        <!-- Aquí mostraremos errores -->
+        <p class="text-red-600 text-sm mb-4" :class="{ hidden: !errorMsg }">
+          {{ errorMsg }}
+        </p>
+
+        <form @submit.prevent="handleLogin" novalidate>
+          <div class="form-group">
+            <label for="username" class="form-label">Usuario</label>
+            <input type="text" id="username" v-model="username"
+                   class="form-input" placeholder="Tu usuario" />
+          </div>
+
+          <div class="form-group">
+            <label for="password" class="form-label">Contraseña</label>
+            <input type="password" id="password" v-model="password"
+                   class="form-input" placeholder="••••••••" />
+          </div>
+
+          <button type="submit" class="btn-primario w-full">Entrar</button>
+        </form>
+          
+        <div class="mt-4 text-center">
+          <a href="#" class="enlace-footer text-sm">
+            ¿Olvidaste tu contraseña?
+          </a>
+        </div>
+      </div>
+    </main>
+
+    <footer class="pie-pagina text-center">
+      <p class="texto-footer">&copy; 2025 MiAplicación. Todos los derechos reservados.</p>
+    </footer>
+  </div>
+
+  <script src="https://unpkg.com/petite-vue"></script>
+  <script  type="module">
+      import { componente_login } from './components/componente_login.js';
+
+      window.petiteVueApp = PetiteVue.createApp({
+          componente_login: componente_login
+      }).mount();
+
+      console.log("Petite Vue app initialized and mounted."); 
+  </script>
+</body>
+</html>

@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Buscar Reporte | Tu Apoyo</title>
+    <link href="/src/styles/input.css" rel="stylesheet">
+</head>
+<body class="pagina-fondo">
+    
+    <header class="encabezado">
+        <div class="container mx-auto px-4 flex justify-between items-center">
+            <p class="logo-app">SafeReport</p>
+            <nav>
+                <a href="../index.html" class="enlace-gestores flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H16a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clip-rule="evenodd" />
+                    </svg>
+                    Volver al Inicio
+                </a>
+            </nav>
+        </div>
+    </header>
+    
+    <main class="flex-grow flex items-center justify-center py-12 px-4 md:px-0">
+        <div class="container" v-scope="componente_buscar"> 
+            <div class="search-card">
+                <h2 class="form-titulo">Buscar y Actualizar Reporte</h2>
+                
+                <div v-if="searchMessage.text" :class="['message-box', searchMessage.type === 'success' ? 'message-success' : 'message-error']">
+                    {{ searchMessage.text }}
+                </div>
+                
+                <div class="credential-group">
+                    <label for="searchCred" class="form-label">Ingresa tu Credencial Anónima Única:</label>
+                    <input type="text" id="searchCred" v-model="searchCredential" class="form-input" placeholder="Ej: Il8_XYy12345" required @keyup.enter="searchReport">
+                </div>
+                
+                <button @click="searchReport" class="btn-primario w-full" :disabled="isSearching || !searchCredential.trim()">
+                    <span v-if="isSearching" class="flex items-center justify-center">
+                        <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        Buscando...
+                    </span>
+                    <span v-else>Buscar Reporte</span>
+                </button>
+            </div>
+            
+            <div v-if="reportFound" class="report-details-card">
+                <h3 class="form-titulo text-2xl">Detalles del Reporte {{ reportDetails.id }}</h3>
+
+                <div class="details-section">
+                    <p class="details-title">Estado Actual:
+                        <span class="report-status">
+                            {{ reportDetails.status }}
+                        </span>
+                    </p>
+
+                    <p class="details-title">Tipo de Abuso:</p>
+                    <p class="details-text">{{ reportDetails.type || 'No especificado' }}</p>
+                </div>
+
+                <div class="details-section">
+                    <p class="details-title">Descripción Original:</p>
+                    <p class="details-text">{{ reportDetails.description || 'No proporcionada' }}</p>
+                </div>
+
+                <div class="details-section">
+                    <p class="details-title">Organización relacionada:</p>
+                    <p class="details-text">{{ reportDetails.location || 'No especificada' }}</p>
+                </div>
+
+                <div class="details-section" v-if="reportDetails.evidence">
+                    <p class="details-title">Evidencia adjunta:</p>
+
+                    <!-- Imagen -->
+                    <img v-if="reportDetails.evidence.startsWith('data:image')" :src="reportDetails.evidence" :alt="reportDetails.evidenceName || 'Evidencia'" class="max-w-full h-auto mt-2 rounded shadow-md" />
+
+                    <!-- PDF -->
+                    <iframe v-else-if="reportDetails.evidence.startsWith('data:application/pdf')" :src="reportDetails.evidence" class="w-full h-96 mt-2 border rounded"></iframe>
+
+                    <!-- Otros formatos -->
+                    <p v-else class="text-sm mt-2 text-gray-500">
+                        Archivo adjunto: <strong>{{ reportDetails.evidenceName }}</strong><br>
+                        <a :href="reportDetails.evidence" download target="_blank" class="text-blue-600 underline">Descargar archivo</a>
+                    </p>
+                </div>
+
+                <div class="details-section" v-if="reportDetails.updates && reportDetails.updates.length > 0">
+                    <p class="details-title">Historial de Actualizaciones:</p>
+                    <ul class="list-disc list-inside text-[var(--color-texto-secundario)] space-y-2">
+                        <li v-for="(update, index) in reportDetails.updates" :key="index">
+                            <span class="font-semibold">{{ formatDate(update.date) }}:</span> {{ update.text }}
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Formulario de actualización -->
+                <div class="new-info-section">
+                    <h4 class="details-title text-xl mb-4">Añadir Nueva Información</h4>
+
+                    <div v-if="updateMessage.text" :class="['message-box', updateMessage.type === 'success' ? 'message-success' : 'message-error']">
+                        {{ updateMessage.text }}
+                    </div>
+
+                    <div class="form-group">
+                        <label for="newInfoText" class="form-label">Nueva Información (texto):</label>
+                        <textarea id="newInfoText" v-model="newUpdateText" class="form-textarea" rows="4" placeholder="Escribe cualquier detalle adicional, seguimiento o cambio de situación."></textarea>
+                    </div>
+
+                    <button
+                        @click="sendUpdate"
+                        class="btn-primario w-full mt-6"
+                        :disabled="isUpdating"
+                    >
+                        <span v-if="isUpdating" class="flex items-center justify-center">
+                            <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            Enviando...
+                        </span>
+                        <span v-else>Enviar Actualización</span>
+                    </button>
+                </div>
+            </div>
+
+        </div>
+    </main>
+    
+    <footer class="pie-pagina">
+        <div class="container mx-auto px-4 text-center texto-footer">
+            <p>&copy; 2025 Tu Apoyo. Todos los derechos reservados.</p>
+            <div class="mt-2 space-x-4">
+                <a href="#" class="enlace-footer">Política de Privacidad</a>
+                <a href="#" class="enlace-footer">Términos de Servicio</a>
+                <a href="#" class="enlace-footer">Contacto</a>
+            </div>
+        </div>
+    </footer>
+    <script src="https://unpkg.com/petite-vue" ></script>
+    <script  type="module">
+      import { componente_buscar } from './components/componente_buscar.js';
+
+      window.petiteVueApp = PetiteVue.createApp({
+          componente_buscar: componente_buscar
+      }).mount();
+
+      console.log("Petite Vue app initialized and mounted."); 
+  </script> 
+</body>
+</html>

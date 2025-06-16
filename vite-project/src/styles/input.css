@@ -1,0 +1,235 @@
+@import "tailwindcss";
+:root {
+    --color-fondo-claro: #FDFDFD;
+    --color-fondo-medio: #F7F9FB;
+    --color-acento-principal: #AECDE0;
+    --color-acento-hover: #8BBAD0;
+    --color-texto-principal: #3A4B5C;
+    --color-texto-secundario: #6B7A8B;
+    --color-texto-enlace: #5A8CC0;
+}
+
+/* --- Clases de Componente Reutilizables --- */
+
+/* Fondo general de la página */
+.pagina-fondo {
+    @apply bg-[var(--color-fondo-claro)] text-[var(--color-texto-principal)] min-h-screen flex flex-col font-sans antialiased;
+}
+
+/* Header */
+.encabezado {
+    @apply bg-[var(--color-fondo-medio)] py-4 shadow-sm;
+}
+
+/* Estilo para el logo/nombre de la app en el header */
+.logo-app {
+    @apply text-[var(--color-acento-principal)] text-2xl font-bold tracking-tight;
+}
+
+/* Enlace discreto para acceso de gestores */
+.enlace-gestores {
+    @apply text-[var(--color-texto-secundario)] hover:text-[var(--color-acento-principal)] transition-colors duration-200 text-sm md:text-base;
+}
+
+/* Título principal de la landing page */
+.titulo-principal {
+    @apply text-4xl md:text-5xl lg:text-6xl font-extrabold mb-6 leading-tight text-[var(--color-texto-principal)];
+}
+
+/* Texto de énfasis en el título principal */
+.titulo-enfasis {
+    @apply text-[var(--color-acento-principal)];
+}
+
+/* Párrafo descriptivo debajo del título */
+.parrafo-descriptivo {
+    @apply text-lg md:text-xl text-[var(--color-texto-secundario)] mb-10 max-w-2xl mx-auto;
+}
+
+/* Contenedor de botones principales */
+.contenedor-botones-principal {
+    @apply flex flex-col md:flex-row justify-center gap-6 mb-12;
+}
+
+/* Botón Primario (Reportar un Caso) */
+.btn-primario {
+    @apply bg-[var(--color-acento-principal)] hover:bg-[var(--color-acento-hover)] text-white font-bold py-4 px-8 rounded-full shadow-lg transform transition-transform duration-200 hover:scale-105 focus:outline-none focus:ring-4 focus:ring-[var(--color-acento-principal)]/50 text-lg;
+}
+
+/* Botón Secundario (Buscar un Reporte) */
+.btn-secundario {
+    @apply bg-[var(--color-fondo-medio)] text-[var(--color-acento-principal)] border-2 border-[var(--color-acento-principal)] hover:bg-[var(--color-acento-principal)] hover:text-white font-semibold py-4 px-8 rounded-full shadow-lg transform transition-transform duration-200 hover:scale-105 focus:outline-none focus:ring-4 focus:ring-[var(--color-acento-principal)]/50 text-lg;
+}
+
+/* Footer de la página */
+.pie-pagina {
+    @apply bg-[var(--color-fondo-medio)] py-8 mt-auto;
+}
+
+/* Texto del footer */
+.texto-footer {
+    @apply text-[var(--color-texto-secundario)] text-sm;
+}
+
+/* Enlaces dentro del footer */
+.enlace-footer {
+    @apply hover:text-[var(--color-acento-principal)] transition-colors duration-200;
+}
+
+/* --- Clases de Componente para Formulario --- */
+
+/* Contenedor principal del formulario */
+.form-card {
+    @apply bg-white p-8 md:p-10 rounded-xl shadow-lg w-full max-w-2xl mx-auto;
+}
+
+/* Título de sección dentro del formulario */
+.form-titulo {
+    @apply text-3xl font-bold text-[var(--color-texto-principal)] mb-6 text-center;
+}
+
+/* Grupo de un campo (label + input/textarea) */
+.form-group {
+    @apply mb-5;
+}
+
+/* Etiqueta de un campo de formulario */
+.form-label {
+    @apply block text-sm font-semibold text-[var(--color-texto-principal)] mb-2;
+}
+
+/* Estilo general para inputs de texto, número, fecha, select */
+.form-input, .form-select {
+    @apply w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--color-acento-principal)] focus:border-transparent transition-all duration-200 text-[var(--color-texto-principal)];
+}
+
+/* Estilo para textareas */
+.form-textarea {
+    @apply w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--color-acento-principal)] focus:border-transparent transition-all duration-200 text-[var(--color-texto-principal)] resize-y min-h-[100px];
+}
+
+/* Área para adjuntar archivos */
+.file-upload-area {
+    @apply border-2 border-dashed border-gray-300 rounded-lg p-6 text-center cursor-pointer hover:border-[var(--color-acento-principal)] transition-colors duration-200;
+}
+
+/* Texto dentro del área de carga de archivos */
+.file-upload-text {
+    @apply text-[var(--color-texto-secundario)] text-sm;
+}
+
+/* Indicador de carga de archivos */
+.file-loading-indicator {
+    @apply text-[var(--color-acento-principal)] text-sm mt-2;
+}
+
+/* Mensaje de privacidad/anonimato */
+.mensaje-privacidad {
+    @apply bg-blue-50 text-blue-700 p-4 rounded-lg text-sm mt-6 mb-8 border border-blue-200;
+}
+
+/* Contenedor del mensaje de confirmación */
+.mensaje-confirmacion {
+    @apply  bg-white p-8 md:p-10 rounded-xl shadow-lg w-full max-w-2xl mx-auto text-center;
+}
+
+/* Título del mensaje de confirmación */
+.confirmacion-titulo {
+    @apply text-3xl font-bold text-[var(--color-acento-principal)] mb-4;
+}
+
+/* Texto del mensaje de confirmación */
+.confirmacion-texto {
+    @apply text-[var(--color-texto-principal)] text-lg mb-6;
+}
+
+/* Credencial anónima generada */
+.credencial-anonima {
+    @apply bg-gray-100 border border-gray-200 text-gray-800 text-xl font-mono p-4 rounded-lg inline-block break-all;
+}
+/* input.css (Add these classes to the end of your existing file) */
+
+/* --- Clases de Componente para Búsqueda de Reporte --- */
+
+/* Contenedor principal de la búsqueda */
+.search-card {
+    @apply  bg-white p-8 md:p-10 rounded-xl shadow-lg w-full max-w-2xl mx-auto;
+}
+
+/* Grupo de campo para la credencial */
+.credential-group {
+    @apply mb-6;
+}
+
+/* Resultado del reporte encontrado */
+.report-details-card {
+    @apply bg-white p-6 md:p-8 rounded-xl shadow-lg w-full max-w-3xl mx-auto mt-8 border border-[var(--color-fondo-medio)];
+}
+
+/* Sección de detalles (para información no editable) */
+.details-section {
+    @apply mb-6 pb-4 border-b border-gray-200 last:border-b-0 last:pb-0;
+}
+
+/* Título de una sección de detalle */
+.details-title {
+    @apply text-lg font-semibold text-[var(--color-texto-principal)] mb-2;
+}
+
+/* Texto de un detalle */
+.details-text {
+    @apply text-[var(--color-texto-secundario)] text-base leading-relaxed;
+}
+
+/* Para resaltar el estado del reporte */
+.report-status {
+    @apply text-lg font-bold;
+}
+.status-abierto {
+    @apply text-green-600;
+}
+.status-en-revision {
+    @apply text-yellow-600;
+}
+.status-cerrado {
+    @apply text-red-600;
+}
+
+/* Sección para añadir nueva información */
+.new-info-section {
+    @apply mt-6 pt-6 border-t border-gray-200;
+}
+
+/* Mensaje de error o éxito para la búsqueda/actualización */
+.message-box {
+    @apply p-4 rounded-lg text-sm text-center mb-6;
+}
+.message-error {
+    @apply bg-red-100 text-red-700 border border-red-200;
+}
+.message-success {
+    @apply bg-green-100 text-green-700 border border-green-200;
+}
+.loading-window {
+  @apply flex flex-col items-center justify-center p-6 bg-gray-100 rounded-md shadow-md text-center;
+}
+
+/* Estilo para el spinner */
+.spinner {
+  @apply w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mb-3;
+}
+
+.asistente-fixed {
+  @apply fixed bottom-5 right-5 flex items-end z-50;
+}
+
+.asistente-img {
+  @apply w-24 h-auto mr-3;
+}
+
+.asistente-texto {
+  @apply bg-gray-100 text-gray-800 px-4 py-3 rounded-lg shadow-lg max-w-xs text-sm font-medium;
+}
+.file-tag {
+  @apply inline-flex items-center bg-gray-100 rounded-md px-3 py-1 text-sm font-medium text-gray-800 gap-2;
+}

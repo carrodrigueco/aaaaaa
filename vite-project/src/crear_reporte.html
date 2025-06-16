@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SafeReport - Complain</title>
+  <link rel="stylesheet" href="/src/styles/input.css" />
+</head>
+<body class="body-base">
+  <header class="encabezado">
+      <div class="container mx-auto px-4 flex justify-between items-center">
+          <p class="logo-app">SafeReport</p>
+          <nav>
+              <a href="../index.html" class="enlace-gestores flex items-center">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
+                      <path fill-rule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H16a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clip-rule="evenodd" />
+                  </svg>
+                  Volver al Inicio
+              </a>
+          </nav>
+      </div>
+  </header>
+
+  <main class="flex-grow flex items-center justify-center py-12 px-4 md:px-0" v-scope="{ ...componente_forms }">
+      <div class="container" >
+
+        <div v-if="isSending" class="loading-window">
+            <div class="spinner"></div>
+            <p>Enviando reporte...</p>
+        </div>
+
+        <div v-else-if="!reportSubmitted">
+            <form @submit.prevent="handleSubmit" class="form-card">
+            <h2 class="form-titulo">Reportar un Caso de Abuso</h2>
+            <p class="mensaje-privacidad">Tu reporte será tratado con la máxima confidencialidad. Tu anonimato está garantizado; no recopilamos información personal identificable en este formulario.</p>
+            <div class="form-group">
+                <label for="tipoAbuso" class="form-label">Tipo de Abuso <span class="text-red-500">*</span></label>
+                <select id="tipoAbuso" v-model="formData.abuseType" @input="isSubmitting = !camposValidos()" class="form-select" required>
+                    <option value="" disabled selected>Selecciona un tipo</option>
+                    <option value="1">Físico</option>
+                    <option value="2">Psicológico/Emocional</option>
+                    <option value="3">Sexual</option>
+                    <option value="4">Económico</option>
+                    <option value="5">Negligencia</option>
+                    <option value="6">Otro</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="descripcion" class="form-label">Descripción Detallada <span class="text-red-500">*</span></label>
+                <textarea id="descripcion" v-model="formData.description" @input="isSubmitting = !camposValidos()" class="form-textarea" rows="6" placeholder="Describe lo sucedido con el mayor detalle posible. ¿Quién, cuándo, dónde, cómo?" @input="isSubmitting = !camposValidos()" required></textarea>
+            </div>
+            <div class="form-group">
+                <label for="ubicacion" class="form-label">
+                    ¿Dónde ocurrió el incidente? <br>
+                    <span class="text-sm text-gray-500">
+                    Por favor, nombra la organización o lugar (ej. universidad, parque, estación, etc.)
+                    </span>
+                </label>
+            <input 
+                type="text" 
+                id="ubicacion" 
+                v-model="formData.location" 
+                class="form-input" 
+                placeholder="Ej: Universidad Nacional - Sede Cartagena, Parque Bolívar, Clínica XYZ"
+                @input="isSubmitting = !camposValidos()"
+                />
+            </div>
+            <div class="form-group">
+                <label for="fechaAproximada" class="form-label">Fecha o Periodo Aproximado del Incidente</label>
+                <input type="date" id="fechaAproximada" v-model="formData.dateApprox" @input="isSubmitting = !camposValidos()" class="form-input">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Adjuntar Evidencia (Fotos, Documentos, etc.)</label>
+                <label for="adjuntos" class="file-upload-area">
+                    <input type="file" id="adjuntos" @change="handleFileChange" class="hidden" accept="image/*,application/pdf" multiple>
+                    <p class="file-upload-text">Arrastra y suelta archivos aquí o haz clic para seleccionar</p>
+                </label>
+
+                <div class="flex items-center gap-2">
+                    <div :key="formData.evidenceFiles.length">
+                        <div class="file-tag" v-for="(file) in formData.evidenceFiles" :key="file">
+                            <span>{{ file.filename }}</span>
+                            <button class="remove-btn" @click="eliminarArchivo(file.index)">❌</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <button type="submit" class="btn-primario w-full mt-8" :disabled="isSubmitting">Enviar Reporte</button>
+            </form>
+        </div>
+
+        <div v-else>
+            <div class="mensaje-confirmacion">
+                <h2 class="confirmacion-titulo">¡Reporte Enviado con Éxito!</h2>
+                <p class="confirmacion-texto">Gracias por tu valentía. Tu reporte ha sido recibido y se le asignó la siguiente credencial anónima única.</p>
+                <p class="confirmacion-texto">**Guarda esta credencial en un lugar seguro**, la necesitarás para consultar el estado de tu reporte en el futuro.</p>
+                <div class="flex flex-col items-center justify-center">
+                <span class="credencial-anonima select-all mb-6">{{ reportCredential }}</span>
+                <button @click="handleReturnHome" class="btn-secundario px-10 py-3">Volver al Inicio</button>
+        </div>
+
+      </div>
+  </main> 
+
+
+  <footer class="pie-pagina">
+      <div class="container mx-auto px-4 text-center texto-footer">
+          <p>&copy; 2025 Tu Apoyo. Todos los derechos reservados.</p>
+          <div class="mt-2 space-x-4">
+              <a href="#" class="enlace-footer">Política de Privacidad</a>
+              <a href="#" class="enlace-footer">Términos de Servicio</a>
+              <a href="#" class="enlace-footer">Contacto</a>
+          </div>
+      </div>
+  </footer>
+
+  <script src="https://unpkg.com/petite-vue"></script>
+  <script  type="module">
+      import { componente } from './components/componente_crear_reporte.js';
+      console.log(import.meta.env);
+
+      window.petiteVueApp = PetiteVue.createApp({
+          componente_forms: componente
+      }).mount();
+
+      console.log("Petite Vue app initialized and mounted."); 
+  </script>
+  
+</body>
+</html>
