@@ -33,16 +33,21 @@ export async function makeRequest(endpoint, options = {})
                 : options.body,
     };
 
-    try {
+    try 
+    {
         const response = await fetch(url, config);
 
         const rawBody = await response.text();
 
-        if (!response.ok) {
+        if (!response.ok)
+        {
             let errorData;
-            try {
+            try
+            {
                 errorData = JSON.parse(rawBody);
-            } catch {
+            }
+            catch
+            {
                 errorData = rawBody;
             }
 
@@ -51,36 +56,26 @@ export async function makeRequest(endpoint, options = {})
             );
         }
 
-        if (response.status === 204 || rawBody.trim() === '') {
+        if (response.status === 204 || rawBody.trim() === '')
+        {
             return null;
         }
 
-        try {
+        try
+        {
             return JSON.parse(rawBody);
-        } catch {
+        }
+        catch
+        {
             return rawBody;
         }
-    } catch (error) {
+    }
+    catch (error)
+    {
         console.error(`Error en la solicitud a ${url}:`, error);
         throw error;
     }
 }
-
-/**
- * Envía un nuevo reporte de abuso.
- * @param {jsonString} reportData - Los datos del formulario del reporte.
- * @returns {Promise<object>} Los datos de confirmación del reporte (ej. la credencial anónima).
- */
-export async function submitReport(reportData) {
-    return await makeRequest('/reportar', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json', // ← importante
-        },
-        body: JSON.stringify(reportData),       // ← convierte objeto a JSON
-    });
-}
-
 
 /**
  * Busca un reporte por su credencial anónima.
@@ -95,11 +90,37 @@ export async function getReport(credential)
 }
 
 /**
- * Envía una actualización a un reporte existente.
- * @param {string} credential - La credencial anónima del reporte a actualizar.
- * @param {object} updateData - Los datos de la actualización (texto, archivos, etc.).
- * @returns {Promise<object>} La confirmación de la actualización.
+ * Envía un nuevo reporte de abuso.
+ * @param {jsonString} reportData - Los datos del formulario del reporte.
+ * @returns {Promise<object>} Los datos de confirmación del reporte (ej. la credencial anónima).
  */
+export async function submitReport(reportData) {
+    return await makeRequest('/report', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json', // ← importante
+        },
+        body: JSON.stringify(reportData),       // ← convierte objeto a JSON
+    });
+}
+
+/**
+ * Busca un reporte por su credencial anónima.
+ * @param {string} credential - La credencial anónima del reporte.
+ * @returns {Promise<object>} Los detalles del reporte encontrado.
+ */
+export async function updateReport(credential, info)
+{
+  return await makeRequest('/update', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json', // ← importante
+        },
+        body: JSON.stringify({"credential": credential,"info": info}),
+    });
+
+}
+
 export function redirect_page(page)
 {
     if(page == "index")
@@ -126,18 +147,6 @@ export function fileToBase64(file)
 
     reader.readAsDataURL(file);
   });
-}
-
-export async function updateReport(credential, description)
-{
-  return await makeRequest('/update', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json', // ← importante
-        },
-        body: JSON.stringify({"credential": credential,"description": description}),       // ← convierte objeto a JSON
-    });
-
 }
 
 export function getMimeTypeFromFilename(filename)

@@ -71,21 +71,23 @@
                     <p class="details-title">Organización relacionada:</p>
                     <p class="details-text">{{ reportDetails.location || 'No especificada' }}</p>
                 </div>
-
-                <div class="details-section" v-if="reportDetails.evidence">
-                    <p class="details-title">Evidencia adjunta:</p>
-
-                    <!-- Imagen -->
-                    <img v-if="reportDetails.evidence.startsWith('data:image')" :src="reportDetails.evidence" :alt="reportDetails.evidenceName || 'Evidencia'" class="max-w-full h-auto mt-2 rounded shadow-md" />
-
-                    <!-- PDF -->
-                    <iframe v-else-if="reportDetails.evidence.startsWith('data:application/pdf')" :src="reportDetails.evidence" class="w-full h-96 mt-2 border rounded"></iframe>
-
-                    <!-- Otros formatos -->
-                    <p v-else class="text-sm mt-2 text-gray-500">
-                        Archivo adjunto: <strong>{{ reportDetails.evidenceName }}</strong><br>
-                        <a :href="reportDetails.evidence" download target="_blank" class="text-blue-600 underline">Descargar archivo</a>
-                    </p>
+                
+                <div v-for>
+                    <div class="details-section" v-if="reportDetails.evidence">
+                        <p class="details-title">Evidencia adjunta:</p>
+    
+                        <!-- Imagen -->
+                        <img v-if="reportDetails.evidence.startsWith('data:image')" :src="reportDetails.evidence" :alt="reportDetails.evidenceName || 'Evidencia'" class="max-w-full h-auto mt-2 rounded shadow-md" />
+    
+                        <!-- PDF -->
+                        <iframe v-else-if="reportDetails.evidence.startsWith('data:application/pdf')" :src="reportDetails.evidence" class="w-full h-96 mt-2 border rounded"></iframe>
+    
+                        <!-- Otros formatos -->
+                        <p v-else class="text-sm mt-2 text-gray-500">
+                            Archivo adjunto: <strong>{{ reportDetails.evidenceName }}</strong><br>
+                            <a :href="reportDetails.evidence" download target="_blank" class="text-blue-600 underline">Descargar archivo</a>
+                        </p>
+                    </div>
                 </div>
 
                 <div class="details-section" v-if="reportDetails.updates && reportDetails.updates.length > 0">

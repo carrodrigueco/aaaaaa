@@ -99,5 +99,5 @@ export const componente_buscar = {
     {
         this.isSearching = false;
     }
-    },
+  },
 };
