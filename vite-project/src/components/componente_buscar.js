@@ -10,7 +10,7 @@ export const componente_buscar = {
   },
   reportFound: false,
   updated: false,
-  reportDetails: {},
+  reportDetails: {evidences:[]},
   searchMessage: { text: '', type: '' },
 
 
@@ -53,23 +53,26 @@ export const componente_buscar = {
     {
         const data = await getReport(`${this.searchCredential}`);
 
-        // Suponiendo que `data` tiene la forma esperada:
-        // Obtener evidencia y tipo MIME si existe
-        const evidencia = data.evidencia;
-        const mimeType = evidencia?.filename ? getMimeTypeFromFilename(evidencia.filename) : null;
-
+        // Obtener evidencias
+        const evidencias = data.evidencias;
+        
         this.reportDetails.id = this.searchCredential;
         this.reportDetails.status = data.estado_reporte || 'Desconocido';
         this.reportDetails.type = data.tipo_abuso || 'No especificado';
         this.reportDetails.description = data.descripcion || 'No proporcionada';
         this.reportDetails.location = data.organizacion || 'No especificada';
-
-        // Procesar evidencia
-        this.reportDetails.evidence = evidencia?.content
-            ? `data:${mimeType};base64,${evidencia.content}`
-            : null;
-
-        this.reportDetails.evidenceName = evidencia?.filename || null;
+        
+        // Procesar evidencias
+        let mimeType;
+        for(let i = 0; i < evidencias.length; i++)
+        {
+          mimeType = evidencias[i]?.filename ? getMimeTypeFromFilename(evidencias[i].filename) : null;
+          this.reportDetails.evidences[i].content = evidencias[i]?.content
+              ? `data:${mimeType};base64,${evidencias[i].content}`
+              : null;
+  
+          this.reportDetails.evidences[i].evidenceName = evidencias[i].filename || null;
+        }
 
 
         // Si `actualizaciones` aún no viene, puedes inicializar vacío
