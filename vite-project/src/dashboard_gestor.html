@@ -1,112 +1,179 @@
 <!DOCTYPE html>
 <html lang="es">
-<head> 
+<head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Panel de Control - Gestor de Casos</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <link rel="stylesheet" href="/src/styles/input.css" />
+  <title>Panel de Control Gestor</title>
 </head>
 <body class="pagina-fondo">
 
-    <div v-scope="dashboardGestor">
- 
-        <!-- Sidebar -->
-        <aside class="w-full md:w-64 bg-[var(--color-fondo-medio)] p-6 shadow-md fixed md:static h-auto md:h-screen">
-        <div class="text-center mb-6">
-            <img v-if="gestor.foto" :src="gestor.foto" alt="Perfil" class="w-20 h-20 rounded-full mx-auto mb-2 object-cover" />
-            <div class="text-lg font-semibold">{{ gestor.nombre }}</div>
-            <div class="text-sm text-[var(--color-texto-secundario)]">{{ gestor.organizacion }}</div>
-            <div class="text-xs mt-1 text-[var(--color-acento-principal)]">Rol: {{ gestor.rol }}</div>
-        </div>
-
-        <nav class="space-y-3">
-            <button class="btn-secundario w-full text-left" @click="vista = 'reportes'">Ver Reportes de Casos</button>
-            <button class="btn-secundario w-full text-left" @click="vista = 'estadisticas'">Ver Estadísticas</button>
-            <button class="btn-secundario w-full text-left text-red-600 hover:text-white hover:bg-red-500" @click="cerrarSesion">Cerrar Sesión</button>
-        </nav>
-        </aside>
-
-        <!-- Contenido Central -->
-        <main class="ml-0 md:ml-64 p-6">
-
-        <!-- Vista Reportes -->
-        <section v-if="vista === 'reportes'">
-            <h1 class="form-titulo mb-6">Lista de Reportes</h1>
-
-            <div v-if="!reporteSeleccionado">
-            <table class="w-full text-sm table-auto bg-white shadow rounded-lg overflow-hidden">
-                <thead class="bg-[var(--color-fondo-medio)] text-left">
-                <tr>
-                    <th class="p-4">ID</th>
-                    <th class="p-4">Estado</th>
-                    <th class="p-4">Fecha</th>
-                    <th class="p-4">Acciones</th>
-                </tr>
-                </thead>
-                <tbody>
-                <tr v-for="reporte in reportes" :key="reporte.id" class="border-t hover:bg-gray-50">
-                    <td class="p-4">{{ reporte.id }}</td>
-                    <td class="p-4">{{ reporte.estado }}</td>
-                    <td class="p-4">{{ reporte.fecha }}</td>
-                    <td class="p-4">
-                    <button class="btn-primario py-2 px-4 text-sm" @click="verDetalle(reporte)">Ver Detalles</button>
-                    </td>
-                </tr>
-                </tbody>
-            </table>
-            </div>
-
-            <!-- Detalle de Reporte -->
-            <div v-else>
-            <button class="btn-secundario mb-4" @click="reporteSeleccionado = null">← Volver</button>
-            <div class="form-card text-sm">
-                <h2 class="form-titulo text-left">Reporte #{{ reporteSeleccionado.id }}</h2>
-                <p><strong>Fecha:</strong> {{ reporteSeleccionado.fecha }}</p>
-                <p><strong>Estado actual:</strong> {{ reporteSeleccionado.estado }}</p>
-                <p><strong>Descripción:</strong> {{ reporteSeleccionado.descripcion }}</p>
-
-                <div class="form-group mt-4">
-                <label class="form-label">Agregar una nota</label>
-                <textarea v-model="nota" class="form-textarea"></textarea>
-                </div>
-
-                <div class="form-group">
-                <label class="form-label">Cambiar estado</label>
-                <select v-model="nuevoEstado" class="form-select">
-                    <option disabled value="">Selecciona un estado</option>
-                    <option v-for="estado in estados" :value="estado">{{ estado }}</option>
-                </select>
-                </div>
-
-                <div class="flex gap-4 mt-6">
-                <button class="btn-primario" @click="guardarCambios">Notificar Cambio</button>
-                <button class="btn-secundario" @click="imprimir">Imprimir</button>
-                </div>
-            </div>
-            </div>
-        </section>
-
-        <!-- Vista Estadísticas -->
-        <section v-else-if="vista === 'estadisticas'">
-            <h1 class="form-titulo">Estadísticas</h1>
-            <div class="form-card text-sm">
-            <p><strong>Total de reportes:</strong> {{ estadisticas.total }}</p>
-            <p><strong>Reportes cerrados:</strong> {{ estadisticas.cerrados }}</p>
-            <p><strong>Reportes en progreso:</strong> {{ estadisticas.enProgreso }}</p>
-            </div>
-        </section>
-        </main>
-
+  <!-- Header idéntico al index.html -->
+  <header class="encabezado">
+    <div class="container mx-auto px-4 flex justify-between items-center">
+        <a href="../index.html" class="logo-app">SafeReport</a>
     </div>
-  <script src="https://unpkg.com/petite-vue"></script>
-  <script  type="module">
-      import { componente_dashboard } from './components/componente_dashboard.js';
+  </header>
 
-      window.petiteVueApp = PetiteVue.createApp({
-          dashboardGestor: componente_dashboard
-      }).mount();
+  <!-- Side Bar -->
+<div class="flex h-[calc(100vh-64px)]"> 
+  <aside class="w-64 bg-[var(--color-fondo-medio)] h-screen shadow-md flex flex-col justify-between">
+    <div>
+      <!-- Perfil -->
+      <div class="p-6 text-center">
+        <img src="src/assets/foto_perfil.jpg" alt="Foto de perfil" class="w-24 h-24 rounded-full shadow-2xs mx-auto mb-4 object-cover"/>
+        <h2 class="text-xl font-semibold text-[var(--color-texto-principal)]">Juan Pérez</h2>
+        <p class="text-sm text-[var(--color-texto-secundario)]">Organización XYZ</p>
+        <span class="inline-block mt-1 px-2 py-1 bg-[var(--color-acento-principal)] text-white text-xs rounded">Gestor de Casos</span>
+      </div>
 
-      console.log("Petite Vue app initialized and mounted.");
+      <!-- Navegación -->
+      <nav class="mt-8">
+        <ul>
+          <li>
+            <button id="btn-reportes" class="w-full text-left px-6 py-3 hover:bg-[var(--color-acento-hover)] transition-colors duration-200">
+              Ver Reportes de Casos
+            </button>
+          </li>
+          <li>
+            <button id="btn-estadisticas" class="w-full text-left px-6 py-3 hover:bg-[var(--color-acento-hover)] transition-colors duration-200">
+              Ver Estadísticas
+            </button>
+          </li>
+        </ul>
+      </nav>
+    </div>
+
+    <!-- Cerrar Sesión -->
+    <div class="p-6">
+      <button class="btn-secundario w-full">
+        Cerrar Sesión
+      </button>
+    </div>
+  </aside>
+
+  <!-- Área Central -->
+  <main id="main-content" class="flex-1 p-8 overflow-auto">
+    <!-- Lista de Reportes -->
+    <section id="seccion-reportes">
+      <h1 class="text-3xl font-bold mb-6">Reportes de Casos</h1>
+      <div class="overflow-x-auto">
+        <table class="w-full table-auto bg-white rounded-lg shadow-lg">
+          <thead class="bg-[var(--color-fondo-medio)]">
+            <tr>
+              <th class="px-4 py-2 text-left">ID</th>
+              <th class="px-4 py-2 text-left">Estado</th>
+              <th class="px-4 py-2 text-left">Fecha de Creación</th>
+              <th class="px-4 py-2 text-left">Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- Ejemplo de fila -->
+            <tr class="border-b hover:bg-[var(--color-fondo-claro)]">
+              <td class="px-4 py-2">#12345</td>
+              <td class="px-4 py-2"><span class="report-status status-abierto">Abierto</span></td>
+              <td class="px-4 py-2">2025-06-15</td>
+              <td class="px-4 py-2">
+                <button class="text-[var(--color-texto-enlace)] hover:underline detalle-btn" data-id="12345">
+                  Ver Detalles
+                </button>
+              </td>
+            </tr>
+            <!-- Más filas... -->
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Detalles de Reporte (oculto por defecto) -->
+    <section id="seccion-detalle" class="hidden">
+      <div class="form-card">
+        <h2 class="form-titulo">Detalle del Reporte #<span id="detalle-id"></span></h2>
+        <div id="detalle-info" class="mb-6"></div>
+        <div class="flex flex-col md:flex-row gap-4">
+          <button id="btn-imprimir" class="btn-primario">Imprimir</button>
+          <button id="btn-volver" class="btn-secundario">Volver a Lista</button>
+        </div>
+        <div class="new-info-section mt-6">
+          <label for="nueva-nota" class="form-label">Agregar una Nota</label>
+          <textarea id="nueva-nota" class="form-textarea" placeholder="Escribe tu nota aquí..."></textarea>
+        </div>
+        <div class="new-info-section mt-6">
+          <label for="cambiar-estado" class="form-label">Cambiar Estado de Reporte</label>
+          <select id="cambiar-estado" class="form-select">
+            <option value="Abierto">Abierto</option>
+            <option value="En Progreso">En Progreso</option>
+            <option value="Cerrado">Cerrado</option>
+            <option value="Archivado">Archivado</option>
+          </select>
+        </div>
+        <div class="mt-6">
+          <button id="btn-notificar" class="btn-primario">Notificar Cambio</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Estadísticas (oculto por defecto) -->
+    <section id="seccion-estadisticas" class="hidden">
+      <h1 class="text-3xl font-bold mb-6">Estadísticas</h1>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div class="form-card text-center">
+          <h3 class="text-xl font-semibold mb-2">Total Reportes</h3>
+          <p class="text-3xl">256</p>
+        </div>
+        <div class="form-card text-center">
+          <h3 class="text-xl font-semibold mb-2">Reportes Cambiados</h3>
+          <p class="text-3xl">124</p>
+        </div>
+        <div class="form-card text-center">
+          <h3 class="text-xl font-semibold mb-2">Reportes Archivados</h3>
+          <p class="text-3xl">48</p>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+
+  <!-- Script de interacción (igual al anterior) -->
+  <script>
+    const btnReportes = document.getElementById('btn-reportes');
+    const btnEstadisticas = document.getElementById('btn-estadisticas');
+    const seccionReportes = document.getElementById('seccion-reportes');
+    const seccionDetalle = document.getElementById('seccion-detalle');
+    const seccionEstadisticas = document.getElementById('seccion-estadisticas');
+    const detalleBtns = document.querySelectorAll('.detalle-btn');
+    const btnVolver = document.getElementById('btn-volver');
+    const detalleIdEl = document.getElementById('detalle-id');
+    const detalleInfoEl = document.getElementById('detalle-info');
+
+    btnReportes.addEventListener('click', () => {
+      seccionReportes.classList.remove('hidden');
+      seccionEstadisticas.classList.add('hidden');
+      seccionDetalle.classList.add('hidden');
+    });
+    btnEstadisticas.addEventListener('click', () => {
+      seccionEstadisticas.classList.remove('hidden');
+      seccionReportes.classList.add('hidden');
+      seccionDetalle.classList.add('hidden');
+    });
+    detalleBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const id = btn.dataset.id;
+        detalleIdEl.textContent = id;
+        detalleInfoEl.innerHTML = `
+          <p class="details-section"><strong>Descripción:</strong> Descripción del reporte ${id}...</p>
+          <p class="details-section"><strong>Fecha:</strong> 2025-06-15</p>
+          <p class="details-section"><strong>Estado:</strong> <span class="report-status status-abierto">Abierto</span></p>
+        `;
+        seccionReportes.classList.add('hidden');
+        seccionDetalle.classList.remove('hidden');
+      });
+    });
+    btnVolver.addEventListener('click', () => {
+      seccionDetalle.classList.add('hidden');
+      seccionReportes.classList.remove('hidden');
+    });
   </script>
+
 </body>
 </html>
