@@ -1,4 +1,5 @@
 import { supabase } from './cliente_superbase.js'
+import {getMimeTypeFromFilename} from './cliente_backend'
  
 export const componente = {
   vista: 'reportes',
@@ -12,7 +13,7 @@ export const componente = {
   nota: '',
   nuevoEstado: '',
   evidenciasDelReporte: [],
-  estados: ['Nuevo', 'En revisión', 'En progreso', 'Cerrado'],
+  estados: ['Abierto', 'Cerrado', 'En revision', 'Reabierto'],
   tipos_abuso: ['Fisico', 'Psicologico','Sexual','Economico','Negligencia','Poder', 'Otro'],
   tipo_evidencia: ['PDF', 'JPEG', 'PNG'],
   estadisticas: {
@@ -31,7 +32,7 @@ export const componente = {
   {
     const session = await supabase.auth.getSession();
     const user = session.data?.session?.user;
-
+    
     if (!user)
     {
       window.location.href = '/login.html';
@@ -39,11 +40,12 @@ export const componente = {
     }
 
     // Obtener información del gestor desde tabla `gestores`
+
     const { data: gestorData, error: errorGestor } = await supabase
-      .from('GestoresCasos')
-      .select('usuario_gestor, rol, id_organizacion')
-      .eq('usuario_gestor', user.email)
-      .single();
+        .from('GestoresCasos')
+        .select('usuario_gestor, id_organizacion, rol_org')
+        .eq('usuario_gestor', user.email)
+        .single()
 
     if (errorGestor)
     {
@@ -56,7 +58,7 @@ export const componente = {
     const { data: extra, error: error } = await supabase
       .from('Organizaciones')
       .select('nombre_organizacion')
-      .eq('id_organizacion', this.orgId)
+      .eq('id_organizaciones', this.orgId)
       .single();
 
     this.gestor = {
@@ -101,13 +103,15 @@ export const componente = {
     }
     this.vista = 'detalle'
     this.nota = '';
-    this.nuevoEstado = reporteSeleccionado.estado;
-
+    this.evidenciasDelReporte = [];
+    this.nuevoEstado = this.reporteSeleccionado.estado_reporte;
+    this.reporteSeleccionado.estado_reporte = this.estados[this.reporteSeleccionado.estado_reporte-1];
+    console.log(this.reporteSeleccionado.estado_reporte);
     // Obtener lista de evidencias del reporte
     const { data: evidencias, error: errorEvidencias } = await supabase
       .from('Evidencias')
       .select('id_evidencia, tipo_evidencia, url_evidencia')
-      .eq('id_reporte', reporteSeleccionado.id_reporte);
+      .eq('id_reporte', this.reporteSeleccionado.id_reporte);
 
     if (errorEvidencias)
     {
@@ -116,13 +120,12 @@ export const componente = {
       return;
     }
 
-    const evidenciasProcesadas = [];
-
+    let index = 0;
     for (const evidencia of evidencias)
     {
-      const filePath = evidencia.url_evidencia.split("files")[1].slice(1); // Ej: 'evidencias/imagen123.txt'
+      const filePath = evidencia.url_evidencia.split("files")[1].slice(1).split("?")[0]; // Ej: 'evidencias/imagen123.txt'
       const filename = filePath.split('/')[1];
-      const mime = getMimeTypeFromFilename(filename);
+      const mimo = getMimeTypeFromFilename(filename);
 
       try
       {
@@ -131,26 +134,37 @@ export const componente = {
           .from('safereport.files')
           .download(filePath);
 
-        if (downloadError)
-        {
+        if (downloadError) {
           console.error(`Error descargando ${filePath}:`, downloadError.message);
-          continue;
+          return; // o continue si estás en un bucle
         }
 
-        const base64Text = await fileData.text(); // Leer contenido base64 directamente
+        // Convertir Blob a base64 con FileReader
+        const reader = new FileReader();
 
-        evidenciasProcesadas.push({
-          filename,
-          mime,
-          base64: base64Text, // ya es base64
-        });
+        reader.onload = () => {
+          const result = reader.result; // ya es 'data:<mime>;base64,...'
 
-      }
-      catch (err)
-      {
+          this.evidenciasDelReporte.push({
+            filename: filename,
+            mime: mimo,
+            base64: result,
+            index: index++
+          });
+        };
+
+        reader.onerror = (e) => {
+          console.error(`Error leyendo archivo ${filePath} como base64:`, e);
+        };
+
+        reader.readAsDataURL(fileData); // lee el blob como base64
+
+      } catch (err) {
         console.error(`Error procesando archivo ${filePath}:`, err);
       }
+
     }
+    console.log(this.evidenciasDelReporte);
   },
 
   async guardarCambios()
@@ -171,7 +185,7 @@ export const componente = {
 
     const { error2 } = await supabase
       .from('Reportes')
-      .update({estado_reporte: this.nuevoEstado})
+      .update({estado_reporte: parseInt(this.nuevoEstado)})
       .eq('id_reporte', id_reporte);
 
     if (error || error2)
@@ -186,6 +200,7 @@ export const componente = {
 
     await this.cargarReportes();
     this.calcularEstadisticas();
+    this.vista = "reportes";
   },
 
   async calcularEstadisticas()

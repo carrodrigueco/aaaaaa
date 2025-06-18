@@ -153,7 +153,7 @@ export function fileToBase64(file)
 
 export function getMimeTypeFromFilename(filename)
 {
-    let extension = filename.split('.')[-1].toLowerCase();
+    let extension = filename.split('.').pop().toLowerCase();
     
     const mimeTypes = {
         'jpg': 'image/jpeg',

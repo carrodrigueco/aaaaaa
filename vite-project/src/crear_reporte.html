@@ -56,14 +56,24 @@
                     Por favor, nombra la organización o lugar (ej. universidad, parque, estación, etc.)
                     </span>
                 </label>
-            <input 
-                type="text" 
-                id="ubicacion" 
-                v-model="formData.location" 
-                class="form-input" 
-                placeholder="Ej: Universidad Nacional - Sede Cartagena, Parque Bolívar, Clínica XYZ"
-                @input="isSubmitting = !camposValidos()"
-                />
+                <select 
+                    v-model="formData.location" 
+                    class="form-input" 
+                    @change="isSubmitting = !camposValidos()">
+                    <option disabled value="">Selecciona una ubicación</option>
+                    <option v-for="org in organizaciones" :value="org">{{ org }}</option>
+                    <option value="otro">Otro</option>
+                </select>
+
+                <input 
+                    v-if="formData.location === 'otro'" 
+                    type="text" 
+                    class="form-input mt-2" 
+                    placeholder="Escribe tu ubicación" 
+                    @input="formData.location = $event.target.value; isSubmitting = !camposValidos()"
+                >
+
+                <p class="mt-2">Ubicación final: {{ formData.location }}</p>
             </div>
             <div class="form-group">
                 <label for="fechaAproximada" class="form-label">Fecha o Periodo Aproximado del Incidente</label>

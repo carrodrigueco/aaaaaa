@@ -20,7 +20,7 @@
         <h1 class="form-titulo">Iniciar Sesión</h1>
 
         <!-- Aquí mostraremos errores -->
-        <p class="text-red-600 text-sm mb-4" :class="{ hidden: !errorMsg }">
+        <p class="text-red-600 text-sm mb-4" v-if="errorMsg != ''">
           {{ errorMsg }}
         </p>
 
@@ -52,7 +52,7 @@
       <p class="texto-footer">&copy; 2025 MiAplicación. Todos los derechos reservados.</p>
     </footer>
   </div>
-
+ 
   <script src="https://unpkg.com/petite-vue"></script>
   <script  type="module">
       import { componente_login } from './components/componente_login.js';

@@ -8,7 +8,7 @@
 </head>
 <body class="pagina-fondo">
   <!-- Side Bar -->
-  <div v-scope="componente_dashboard" class="flex h-[calc(100vh-64px)]"> 
+  <div v-scope="{ ...componente_dashboard}" class="flex h-[calc(100vh-64px)]"  @vue:mounted="mounted"> 
     <aside class="w-64 bg-[var(--color-fondo-medio)] h-screen shadow-md flex flex-col justify-between">
         <!-- Perfil -->
       <div class="p-6 text-center">
@@ -52,8 +52,8 @@
           </h2>
 
           <div id="detalle-info" class="mb-6">
-            <p><strong>Estado:</strong> {{ reporteSeleccionado.estado }}</p>
-            <p><strong>Fecha de creación:</strong> {{ reporteSeleccionado.fecha_creacion }}</p>
+            <p><strong>Estado:</strong> {{ reporteSeleccionado.estado_reporte }}</p>
+            <p><strong>Fecha de creación:</strong> {{ reporteSeleccionado.fecha_suceso }}</p>
             <p><strong>Descripción:</strong> {{ reporteSeleccionado.detalle }}</p>
           </div>
 
@@ -64,11 +64,11 @@
               <template v-for="(ev, index) in evidenciasDelReporte">
                 <div :key="index">
                   <template v-if="ev.mime.startsWith('image/')">
-                    <img :src="'data:' + ev.mime + ';base64,' + ev.base64" :alt="ev.filename" class="max-w-full rounded shadow" />
+                    <img :src="ev.base64" :alt="ev.filename" class="max-w-full rounded shadow" />
                   </template>
 
                   <template v-else-if="ev.mime === 'application/pdf'">
-                    <iframe :src="'data:' + ev.mime + ';base64,' + ev.base64" class="w-full h-64" frameborder="0"></iframe>
+                    <iframe :src="ev.base64" class="w-full h-64" frameborder="0"></iframe>
                   </template>
 
                   <template v-else>
@@ -101,10 +101,10 @@
               class="form-select"
               v-model="nuevoEstado"
             >
-              <option value="Abierto">Abierto</option>
-              <option value="En Progreso">En Progreso</option>
-              <option value="Cerrado">Cerrado</option>
-              <option value="Archivado">Archivado</option>
+              <option value="1">Abierto</option>
+              <option value="3">En revision</option>
+              <option value="2">Cerrado</option>
+              <option value="4">Reabierto</option>
             </select>
           </div>
 
@@ -129,7 +129,7 @@
           <h3 class="text-xl font-semibold mb-2">Tipos de Reporte</h3>
           <ul>
             <li v-for="(cantidad, tipo) in stats.porTipo" :key="tipo">
-              {{ tipo }}: {{ cantidad }}
+              {{ tipos_abuso[tipo-1] }}: {{ cantidad }}
             </li>
           </ul>
         </div>
@@ -137,7 +137,7 @@
           <h3 class="text-xl font-semibold mb-2">Estados</h3>
           <ul>
             <li v-for="(cantidad, estado) in stats.porEstado" :key="estado">
-              {{ estado }}: {{ cantidad }}
+              {{ estados[estado-1] }}: {{ cantidad }}
             </li>
           </ul>
         </div>
@@ -172,7 +172,7 @@
             <tbody>
               <tr class="border-b hover:bg-[var(--color-fondo-claro)]" v-for="reporte in reportes" :key="reporte">
                   <td class="px-4 py-2">{{reporte.id_reporte}}</td>
-                  <td class="px-4 py-2"><span class="report-status">{{estados[reporte.estado_reporte]}}</span></td>
+                  <td class="px-4 py-2"><span class="report-status">{{estados[reporte.estado_reporte-1]}}</span></td>
                   <td class="px-4 py-2">{{reporte.fecha_suceso.split(" ")[0]}}</td>
                   <td class="px-4 py-2">
                     <button class="text-[var(--color-texto-enlace)] hover:underline detalle-btn" @click="verDetalle(reporte.id_reporte)">

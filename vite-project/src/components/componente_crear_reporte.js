@@ -6,7 +6,8 @@ export const componente = {
     isSubmitting : true,
     filesLoaded : false,
     isSending: false,
-    reportCredential : '', 
+    reportCredential : '',
+    organizaciones: ["Universidad de Cartagena", "Universidad Nacional", "Ecopetrol"],
     reportSubmitted : false,
 
     async handleSubmit()
