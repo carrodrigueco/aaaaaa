@@ -109,14 +109,16 @@ export async function submitReport(reportData) {
  * @param {string} credential - La credencial anónima del reporte.
  * @returns {Promise<object>} Los detalles del reporte encontrado.
  */
-export async function updateReport(credential, info)
+export async function updateReport(credential, info, evidence)
 {
+    const algo = JSON.stringify({"credential": credential, "description": info, "evidenceFiles": evidence});
+    console.log(algo);
   return await makeRequest('/update', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json', // ← importante
         },
-        body: JSON.stringify({"credential": credential,"info": info}),
+        body: algo,
     });
 
 }
@@ -151,8 +153,8 @@ export function fileToBase64(file)
 
 export function getMimeTypeFromFilename(filename)
 {
-    const extension = filename.split('.').pop().toLowerCase();
-
+    let extension = filename.split('.')[1].toLowerCase();
+    
     const mimeTypes = {
         'jpg': 'image/jpeg',
         'jpeg': 'image/jpeg',
@@ -165,5 +167,9 @@ export function getMimeTypeFromFilename(filename)
         // Agrega más si necesitas
     };
 
+    if(extension.length > 3)
+    {
+        extension = extension.slice(0, 3)
+    }
     return mimeTypes[extension] || 'application/octet-stream';
 }

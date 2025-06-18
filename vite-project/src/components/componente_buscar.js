@@ -1,4 +1,4 @@
-import { getReport, updateReport, getMimeTypeFromFilename} from './cliente_backend'
+import { getReport, updateReport, getMimeTypeFromFilename, fileToBase64} from './cliente_backend'
 
 export const componente_buscar = {
   searchCredential: '',
@@ -6,11 +6,14 @@ export const componente_buscar = {
   isSearching: false,
   isUpdating: false,
   updateMessage: {
+    text: '',
     type: ''
   },
   reportFound: false,
   updated: false,
-  reportDetails: {evidences:[]},
+  reportDetails: {evidences: []},
+  newfiles: [],
+  filesLoaded: false,
   searchMessage: { text: '', type: '' },
 
 
@@ -27,7 +30,7 @@ export const componente_buscar = {
     this.isUpdating = true;
     this.updateMessage = { text: '', type: '' };
 
-    const res = await updateReport(this.searchCredential.trim(), this.newUpdateText.trim());
+    const res = await updateReport(this.searchCredential.trim(), this.newUpdateText.trim(), this.newfiles);
 
     this.isUpdating = false;
     this.updateMessage = {
@@ -37,10 +40,14 @@ export const componente_buscar = {
     console.log(res.mensaje);
     if (res.mensaje)
     {
-      alert("PAGINA DICE: "+res.mensaje);
+      alert("PAGINA DICE: "+ res.mensaje + "\n "+ res.extra);
       this.newUpdateText = '';
       this.reportFound = false;
       // O podrías recargar los detalles del reporte aquí si tienes función de búsqueda
+    }
+    if(res.mensaje == 'success')
+    {
+      this.reportDetails.evidences = [];
     }
   },
   async searchReport()
@@ -54,7 +61,7 @@ export const componente_buscar = {
         const data = await getReport(`${this.searchCredential}`);
 
         // Obtener evidencias
-        const evidencias = data.evidencias;
+        const la_evidencia = data.evidencias;
         
         this.reportDetails.id = this.searchCredential;
         this.reportDetails.status = data.estado_reporte || 'Desconocido';
@@ -63,15 +70,17 @@ export const componente_buscar = {
         this.reportDetails.location = data.organizacion || 'No especificada';
         
         // Procesar evidencias
-        let mimeType;
-        for(let i = 0; i < evidencias.length; i++)
+        if(la_evidencia.length > 0)
         {
-          mimeType = evidencias[i]?.filename ? getMimeTypeFromFilename(evidencias[i].filename) : null;
-          this.reportDetails.evidences[i].content = evidencias[i]?.content
-              ? `data:${mimeType};base64,${evidencias[i].content}`
-              : null;
-  
-          this.reportDetails.evidences[i].evidenceName = evidencias[i].filename || null;
+          for(let i = 0; i < la_evidencia.length; i++)
+          {
+            this.reportDetails.evidences.push({
+                    evidenceName: la_evidencia[i].filename,
+                    content: la_evidencia[i].content,
+                    mime: getMimeTypeFromFilename(la_evidencia[i].filename),
+                    index: i
+                  });
+          }
         }
 
 
@@ -99,5 +108,45 @@ export const componente_buscar = {
     {
         this.isSearching = false;
     }
+  },
+  async handleFileChange(event)
+  {
+    const files_array = event.target.files;
+
+    if (files_array && files_array.length > 0)
+    {
+        const allowedTypes = ['image/jpeg', 'image/png', 'application/pdf'];
+
+        for (let i = 0; i < files_array.length; i++)
+        {
+            const file = files_array[i];
+
+            if (!allowedTypes.includes(file.type))
+            {
+                continue;
+            }
+
+            const base64 = await fileToBase64(file);
+
+            this.newfiles.push({
+                filename: file.name,
+                content: base64,
+                index: i
+            });
+        }
+
+        this.filesLoaded = this.newfiles.length > 0;
+    }
+    else
+    {
+        this.filesLoaded = false;
+    }  
+  },
+  eliminarArchivo(index)
+  {
+      this.newfiles.splice(index, 1);
+      // Si quieres actualizar alguna otra variable asociada
+      this.filesLoaded = this.newfiles.length > 0;
+
   },
 };

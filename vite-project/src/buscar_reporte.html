@@ -72,21 +72,23 @@
                     <p class="details-text">{{ reportDetails.location || 'No especificada' }}</p>
                 </div>
                 
-                <div v-for>
-                    <div class="details-section" v-if="reportDetails.evidence">
-                        <p class="details-title">Evidencia adjunta:</p>
-    
+                <p class="details-title">Evidencia adjunta:</p>
+                <div v-for="file in reportDetails.evidences" :key="file">
+                    <div class="details-section" v-if="file.evidenceName">
                         <!-- Imagen -->
-                        <img v-if="reportDetails.evidence.startsWith('data:image')" :src="reportDetails.evidence" :alt="reportDetails.evidenceName || 'Evidencia'" class="max-w-full h-auto mt-2 rounded shadow-md" />
-    
+                        <img
+                        v-if="file.mime.startsWith('image')"
+                        :src="`data:${file.mime};base64,${file.content}`"
+                        :alt="file.evidenceName || 'Evidencia'"
+                        class="max-w-full h-auto mt-2 rounded shadow-md"
+                        />
+
                         <!-- PDF -->
-                        <iframe v-else-if="reportDetails.evidence.startsWith('data:application/pdf')" :src="reportDetails.evidence" class="w-full h-96 mt-2 border rounded"></iframe>
-    
-                        <!-- Otros formatos -->
-                        <p v-else class="text-sm mt-2 text-gray-500">
-                            Archivo adjunto: <strong>{{ reportDetails.evidenceName }}</strong><br>
-                            <a :href="reportDetails.evidence" download target="_blank" class="text-blue-600 underline">Descargar archivo</a>
-                        </p>
+                        <iframe
+                        v-else-if="file.mime.startsWith('application')"
+                        :src="`data:${file.mime};base64,${file.content}`"
+                        class="w-full h-96 mt-2 border rounded">
+                        </iframe>
                     </div>
                 </div>
 
@@ -112,6 +114,23 @@
                         <textarea id="newInfoText" v-model="newUpdateText" class="form-textarea" rows="4" placeholder="Escribe cualquier detalle adicional, seguimiento o cambio de situación."></textarea>
                     </div>
 
+                    <div class="form-group">
+                        <label class="form-label">Adjuntar Evidencia (Fotos, Documentos, etc.)</label>
+                        <label for="adjuntos" class="file-upload-area">
+                            <input type="file" id="adjuntos" @change="handleFileChange" class="hidden" accept="image/*,application/pdf" multiple>
+                            <p class="file-upload-text">Arrastra y suelta archivos aquí o haz clic para seleccionar</p>
+                        </label>
+
+                        <div class="flex items-center gap-2">
+                            <div :key="newfiles.length">
+                                <div class="file-tag" v-for="(file) in newfiles" :key="file">
+                                    <span>{{ file.filename }}</span>
+                                    <button class="remove-btn" @click="eliminarArchivo(file.index)">❌</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                     <button
                         @click="sendUpdate"
                         class="btn-primario w-full mt-6"
@@ -128,7 +147,6 @@
                     </button>
                 </div>
             </div>
-
         </div>
     </main>
     
@@ -151,6 +169,6 @@
       }).mount();
 
       console.log("Petite Vue app initialized and mounted."); 
-  </script> 
+    </script> 
 </body>
 </html>

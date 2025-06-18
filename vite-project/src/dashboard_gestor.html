@@ -7,14 +7,6 @@
   <title>Panel de Control Gestor</title>
 </head>
 <body class="pagina-fondo">
-
-  <!-- Header idéntico al index.html -->
-  <header class="encabezado">
-    <div class="container mx-auto px-4 flex justify-between items-center">
-        <a href="../index.html" class="logo-app">SafeReport</a>
-    </div>
-  </header>
-
   <!-- Side Bar -->
 <div class="flex h-[calc(100vh-64px)]"> 
   <aside class="w-64 bg-[var(--color-fondo-medio)] h-screen shadow-md flex flex-col justify-between">
@@ -135,45 +127,15 @@
 </div>
 
   <!-- Script de interacción (igual al anterior) -->
-  <script>
-    const btnReportes = document.getElementById('btn-reportes');
-    const btnEstadisticas = document.getElementById('btn-estadisticas');
-    const seccionReportes = document.getElementById('seccion-reportes');
-    const seccionDetalle = document.getElementById('seccion-detalle');
-    const seccionEstadisticas = document.getElementById('seccion-estadisticas');
-    const detalleBtns = document.querySelectorAll('.detalle-btn');
-    const btnVolver = document.getElementById('btn-volver');
-    const detalleIdEl = document.getElementById('detalle-id');
-    const detalleInfoEl = document.getElementById('detalle-info');
+  <script src="https://unpkg.com/petite-vue"></script>
+  <script  type="module">
+      import { componente } from './components/componente_dashboardjs';
 
-    btnReportes.addEventListener('click', () => {
-      seccionReportes.classList.remove('hidden');
-      seccionEstadisticas.classList.add('hidden');
-      seccionDetalle.classList.add('hidden');
-    });
-    btnEstadisticas.addEventListener('click', () => {
-      seccionEstadisticas.classList.remove('hidden');
-      seccionReportes.classList.add('hidden');
-      seccionDetalle.classList.add('hidden');
-    });
-    detalleBtns.forEach(btn => {
-      btn.addEventListener('click', () => {
-        const id = btn.dataset.id;
-        detalleIdEl.textContent = id;
-        detalleInfoEl.innerHTML = `
-          <p class="details-section"><strong>Descripción:</strong> Descripción del reporte ${id}...</p>
-          <p class="details-section"><strong>Fecha:</strong> 2025-06-15</p>
-          <p class="details-section"><strong>Estado:</strong> <span class="report-status status-abierto">Abierto</span></p>
-        `;
-        seccionReportes.classList.add('hidden');
-        seccionDetalle.classList.remove('hidden');
-      });
-    });
-    btnVolver.addEventListener('click', () => {
-      seccionDetalle.classList.add('hidden');
-      seccionReportes.classList.remove('hidden');
-    });
+      window.petiteVueApp = PetiteVue.createApp({
+          componente_dashboard: componente
+      }).mount();
+
+      console.log("Petite Vue app initialized and mounted."); 
   </script>
-
 </body>
 </html>

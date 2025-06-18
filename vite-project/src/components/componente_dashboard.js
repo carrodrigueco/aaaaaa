@@ -3,7 +3,6 @@ import { supabase } from './cliente_superbase.js'
 export const componente_dashboard = {
   vista: 'reportes',
   gestor: {
-    nombre: '',
     rol: '',
     organizacion: '',
     foto: ''
@@ -12,7 +11,10 @@ export const componente_dashboard = {
   reporteSeleccionado: null,
   nota: '',
   nuevoEstado: '',
+  evidenciasDelReporte: [],
   estados: ['Nuevo', 'En revisión', 'En progreso', 'Cerrado'],
+  tipos_abuso: ['Fisico', 'Psicologico','Sexual','Economico','Negligencia','Poder', 'Otro'],
+  tipo_evidencia: ['PDF', 'JPEG', 'PNG'],
   estadisticas: {
     total: 0,
     cerrados: 0,
@@ -33,8 +35,8 @@ export const componente_dashboard = {
     // Obtener información del gestor desde tabla `gestores`
     const { data: gestorData, error: errorGestor } = await supabase
       .from('GestoresCasos')
-      .select('usuario_gestor, rol, organizacion, foto, org_id')
-      .eq('id', user.id)
+      .select('usuario_gestor, rol, organizacion, foto, id_organizacion')
+      .eq('usuario_gestor', user.email)
       .single();
 
     if (errorGestor)
@@ -43,29 +45,31 @@ export const componente_dashboard = {
       return;
     }
 
-    if(gestorData == null)
+    if(gestorData.foto == null)
     {
-      gestorData == supabase.storage.from_("safereport.files").download("fotos_gestores/Avatar.png")
+      gestorData.foto = supabase.storage.from_("safereport.files").download("fotos_gestores/Avatar.png")
     }
+
     this.gestor = {
-      nombre: gestorData.nombre,
       rol: gestorData.rol,
       organizacion: gestorData.organizacion,
       foto: gestorData.foto
     };
 
-    this.orgId = gestorData.org_id;
+    this.orgId = gestorData.id_organizacion;
     await this.cargarReportes();
     this.calcularEstadisticas();
   },
 
-  async cargarReportes() {
+  async cargarReportes()
+  {
     const { data, error } = await supabase
-      .from('reportes')
+      .from('Reportes')
       .select('*')
-      .eq('org_id', this.orgId);
+      .eq('id_organizacion', this.orgId);
 
-    if (error) {
+    if (error)
+    {
       console.error('Error cargando reportes:', error.message);
       return;
     }
@@ -73,56 +77,99 @@ export const componente_dashboard = {
     this.reportes = data;
   },
 
-  verDetalle(reporte) {
+  async verDetalle(reporte)
+  {
     this.reporteSeleccionado = { ...reporte };
     this.nota = '';
-    this.nuevoEstado = reporte.estado;
+    this.nuevoEstado = reporteSeleccionado.estado;
+
+    // Obtener lista de evidencias del reporte
+    const { data: evidencias, error: errorEvidencias } = await supabase
+      .from('Evidencias')
+      .select('id_evidencia, tipo_evidencia, url_evidencia')
+      .eq('id_reporte', reporteSeleccionado.id_reporte);
+
+    if (errorEvidencias) {
+      console.error('Error cargando evidencias del reporte:', errorEvidencias.message);
+      this.evidenciasDelReporte = [];
+      return;
+    }
+
+    const evidenciasProcesadas = [];
+
+    for (const evidencia of evidencias) {
+      const filePath = evidencia.url_evidencia; // Ej: 'evidencias/imagen123.txt'
+      const filename = filePath.split('/').pop();
+      const mime = getMimeTypeFromFilename(filename);
+
+      try {
+        const { data: fileData, error: downloadError } = await supabase
+          .storage
+          .from('safereport.files')
+          .download(filePath);
+
+        if (downloadError) {
+          console.error(`Error descargando ${filePath}:`, downloadError.message);
+          continue;
+        }
+
+        const base64Text = await fileData.text(); // Leer contenido base64 directamente
+
+        evidenciasProcesadas.push({
+          filename,
+          mime,
+          base64: base64Text, // ya es base64
+        });
+
+      } catch (err) {
+        console.error(`Error procesando archivo ${filePath}:`, err);
+      }
+    }
   },
 
-  async guardarCambios() {
+  async guardarCambios()
+  {
     if (!this.reporteSeleccionado) return;
 
-    const { id } = this.reporteSeleccionado;
+    const { id_reporte } = this.reporteSeleccionado;
 
     const updates = {
-      estado: this.nuevoEstado,
-      nota: this.nota,
-      fecha_actualizacion: new Date().toISOString()
+      detalle: this.nota,
+      fecha: new Date().toISOString(),
+      id_reporte: id_reporte
     };
 
     const { error } = await supabase
-      .from('reportes')
-      .update(updates)
-      .eq('id', id);
+      .from('ActualizacionesReportes')
+      .insert(updates);
 
-    if (error) {
+    const { error2 } = await supabase
+      .from('Reportes')
+      .update({estado_reporte: this.nuevoEstado})
+      .eq('id_reporte', id_reporte);
+
+    if (error || error2)
+    {
       alert('Error al guardar los cambios');
       console.error(error);
       return;
     }
 
     alert('Cambios guardados correctamente');
-    this.reporteSeleccionado.estado = this.nuevoEstado;
-    this.reporteSeleccionado.nota = this.nota;
+    this.reporteSeleccionado = null;
 
     await this.cargarReportes();
     this.calcularEstadisticas();
   },
 
-  imprimir() {
+  imprimir()
+  {
     window.print();
   },
 
-  async calcularEstadisticas() {
-    const total = this.reportes.length;
-    const cerrados = this.reportes.filter(r => r.estado === 'Cerrado').length;
-    const enProgreso = this.reportes.filter(r => r.estado === 'En progreso').length;
-
-    this.estadisticas = {
-      total,
-      cerrados,
-      enProgreso
-    };
+  async calcularEstadisticas()
+  {
+    
   },
 
   cerrarSesion() {
