@@ -233,3 +233,6 @@
 .file-tag {
   @apply inline-flex items-center bg-gray-100 rounded-md px-3 py-1 text-sm font-medium text-gray-800 gap-2;
 }
+.button-dashboard{
+    @apply w-full text-left px-6 py-3 hover:bg-[var(--color-acento-hover)] transition-colors duration-200
+}

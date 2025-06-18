@@ -1,6 +1,6 @@
 import { supabase } from './cliente_superbase.js'
-
-export const componente_dashboard = {
+ 
+export const componente = {
   vista: 'reportes',
   gestor: {
     rol: '',
@@ -20,6 +20,12 @@ export const componente_dashboard = {
     cerrados: 0,
     enProgreso: 0
   },
+  stats: {
+      total: 0,
+      porTipo: {},
+      porEstado: {},
+      porMes: {}
+    },
 
   async mounted()
   {
@@ -35,7 +41,7 @@ export const componente_dashboard = {
     // Obtener información del gestor desde tabla `gestores`
     const { data: gestorData, error: errorGestor } = await supabase
       .from('GestoresCasos')
-      .select('usuario_gestor, rol, organizacion, foto, id_organizacion')
+      .select('usuario_gestor, rol, id_organizacion')
       .eq('usuario_gestor', user.email)
       .single();
 
@@ -45,18 +51,19 @@ export const componente_dashboard = {
       return;
     }
 
-    if(gestorData.foto == null)
-    {
-      gestorData.foto = supabase.storage.from_("safereport.files").download("fotos_gestores/Avatar.png")
-    }
+    this.orgId = gestorData.id_organizacion;
+
+    const { data: extra, error: error } = await supabase
+      .from('Organizaciones')
+      .select('nombre_organizacion')
+      .eq('id_organizacion', this.orgId)
+      .single();
 
     this.gestor = {
       rol: gestorData.rol,
-      organizacion: gestorData.organizacion,
-      foto: gestorData.foto
+      organizacion: extra?.nombre_organizacion?.trim() || "null"
     };
 
-    this.orgId = gestorData.id_organizacion;
     await this.cargarReportes();
     this.calcularEstadisticas();
   },
@@ -77,9 +84,22 @@ export const componente_dashboard = {
     this.reportes = data;
   },
 
-  async verDetalle(reporte)
+  async verDetalle(id_reporte)
   {
-    this.reporteSeleccionado = { ...reporte };
+    for (const reporte of this.reportes)
+    {
+      if(reporte.id_reporte == id_reporte)
+      {
+        this.reporteSeleccionado = { ...reporte };
+        break;
+      }
+    }
+
+    if(this.reporteSeleccionado === null)
+    {
+      return
+    }
+    this.vista = 'detalle'
     this.nota = '';
     this.nuevoEstado = reporteSeleccionado.estado;
 
@@ -89,7 +109,8 @@ export const componente_dashboard = {
       .select('id_evidencia, tipo_evidencia, url_evidencia')
       .eq('id_reporte', reporteSeleccionado.id_reporte);
 
-    if (errorEvidencias) {
+    if (errorEvidencias)
+    {
       console.error('Error cargando evidencias del reporte:', errorEvidencias.message);
       this.evidenciasDelReporte = [];
       return;
@@ -97,18 +118,21 @@ export const componente_dashboard = {
 
     const evidenciasProcesadas = [];
 
-    for (const evidencia of evidencias) {
-      const filePath = evidencia.url_evidencia; // Ej: 'evidencias/imagen123.txt'
-      const filename = filePath.split('/').pop();
+    for (const evidencia of evidencias)
+    {
+      const filePath = evidencia.url_evidencia.split("files")[1].slice(1); // Ej: 'evidencias/imagen123.txt'
+      const filename = filePath.split('/')[1];
       const mime = getMimeTypeFromFilename(filename);
 
-      try {
+      try
+      {
         const { data: fileData, error: downloadError } = await supabase
           .storage
           .from('safereport.files')
           .download(filePath);
 
-        if (downloadError) {
+        if (downloadError)
+        {
           console.error(`Error descargando ${filePath}:`, downloadError.message);
           continue;
         }
@@ -121,7 +145,9 @@ export const componente_dashboard = {
           base64: base64Text, // ya es base64
         });
 
-      } catch (err) {
+      }
+      catch (err)
+      {
         console.error(`Error procesando archivo ${filePath}:`, err);
       }
     }
@@ -162,17 +188,28 @@ export const componente_dashboard = {
     this.calcularEstadisticas();
   },
 
-  imprimir()
-  {
-    window.print();
-  },
-
   async calcularEstadisticas()
   {
-    
+    this.stats.total = this.reportes.length;
+
+    for (const r of this.reportes)
+    {
+      // Tipo de abuso
+      this.stats.porTipo[r.tipo_abuso] = (this.stats.porTipo[r.tipo_abuso] || 0) + 1;
+
+      // Estado del reporte
+      this.stats.porEstado[r.estado_reporte] = (this.stats.porEstado[r.estado_reporte] || 0) + 1;
+
+      // Fecha: por mes (YYYY-MM)
+      const fecha = new Date(r.fecha_suceso.replace(" ", "T"));
+      const mes = `${fecha.getFullYear()}-${(fecha.getMonth() + 1).toString().padStart(2, '0')}`;
+      this.stats.porMes[mes] = (this.stats.porMes[mes] || 0) + 1;
+    }
+
   },
 
-  cerrarSesion() {
+  cerrarSesion()
+  {
     supabase.auth.signOut().then(() => {
       localStorage.clear();
       window.location.href = '/login.html';

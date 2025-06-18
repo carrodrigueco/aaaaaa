@@ -8,134 +8,195 @@
 </head>
 <body class="pagina-fondo">
   <!-- Side Bar -->
-<div class="flex h-[calc(100vh-64px)]"> 
-  <aside class="w-64 bg-[var(--color-fondo-medio)] h-screen shadow-md flex flex-col justify-between">
-    <div>
-      <!-- Perfil -->
+  <div v-scope="componente_dashboard" class="flex h-[calc(100vh-64px)]"> 
+    <aside class="w-64 bg-[var(--color-fondo-medio)] h-screen shadow-md flex flex-col justify-between">
+        <!-- Perfil -->
       <div class="p-6 text-center">
-        <img src="src/assets/foto_perfil.jpg" alt="Foto de perfil" class="w-24 h-24 rounded-full shadow-2xs mx-auto mb-4 object-cover"/>
-        <h2 class="text-xl font-semibold text-[var(--color-texto-principal)]">Juan Pérez</h2>
-        <p class="text-sm text-[var(--color-texto-secundario)]">Organización XYZ</p>
-        <span class="inline-block mt-1 px-2 py-1 bg-[var(--color-acento-principal)] text-white text-xs rounded">Gestor de Casos</span>
+        <img src="../public/avatar.png" alt="Foto de perfil" class="w-24 h-24 rounded-full shadow-2xs mx-auto mb-4 object-cover"/>
+        <p class="text-sm text-[var(--color-texto-secundario)]">{{ gestor.organizacion}}</p>
+        <span class="inline-block mt-1 px-2 py-1 bg-[var(--color-acento-principal)] text-white text-xs rounded">{{ gestor?.rol?.trim() || "Gestor de Casos"}}</span>
       </div>
 
-      <!-- Navegación -->
+        <!-- Navegación -->
       <nav class="mt-8">
         <ul>
           <li>
-            <button id="btn-reportes" class="w-full text-left px-6 py-3 hover:bg-[var(--color-acento-hover)] transition-colors duration-200">
+            <button id="btn-reportes" class="button-dashboard" @click="vista = 'reportes'">
               Ver Reportes de Casos
             </button>
           </li>
           <li>
-            <button id="btn-estadisticas" class="w-full text-left px-6 py-3 hover:bg-[var(--color-acento-hover)] transition-colors duration-200">
+            <button id="btn-estadisticas" class="button-dashboard" @click="vista = 'stats'">
               Ver Estadísticas
             </button>
           </li>
         </ul>
       </nav>
-    </div>
 
-    <!-- Cerrar Sesión -->
-    <div class="p-6">
-      <button class="btn-secundario w-full">
-        Cerrar Sesión
-      </button>
-    </div>
-  </aside>
-
-  <!-- Área Central -->
-  <main id="main-content" class="flex-1 p-8 overflow-auto">
-    <!-- Lista de Reportes -->
-    <section id="seccion-reportes">
-      <h1 class="text-3xl font-bold mb-6">Reportes de Casos</h1>
-      <div class="overflow-x-auto">
-        <table class="w-full table-auto bg-white rounded-lg shadow-lg">
-          <thead class="bg-[var(--color-fondo-medio)]">
-            <tr>
-              <th class="px-4 py-2 text-left">ID</th>
-              <th class="px-4 py-2 text-left">Estado</th>
-              <th class="px-4 py-2 text-left">Fecha de Creación</th>
-              <th class="px-4 py-2 text-left">Acciones</th>
-            </tr>
-          </thead>
-          <tbody>
-            <!-- Ejemplo de fila -->
-            <tr class="border-b hover:bg-[var(--color-fondo-claro)]">
-              <td class="px-4 py-2">#12345</td>
-              <td class="px-4 py-2"><span class="report-status status-abierto">Abierto</span></td>
-              <td class="px-4 py-2">2025-06-15</td>
-              <td class="px-4 py-2">
-                <button class="text-[var(--color-texto-enlace)] hover:underline detalle-btn" data-id="12345">
-                  Ver Detalles
-                </button>
-              </td>
-            </tr>
-            <!-- Más filas... -->
-          </tbody>
-        </table>
+      <!-- Cerrar Sesión -->
+      <div class="p-6">
+        <button class="btn-secundario w-full" @click="cerrarSesion">
+          Cerrar Sesión
+        </button>
       </div>
-    </section>
+    </aside>
 
-    <!-- Detalles de Reporte (oculto por defecto) -->
-    <section id="seccion-detalle" class="hidden">
-      <div class="form-card">
-        <h2 class="form-titulo">Detalle del Reporte #<span id="detalle-id"></span></h2>
-        <div id="detalle-info" class="mb-6"></div>
-        <div class="flex flex-col md:flex-row gap-4">
-          <button id="btn-imprimir" class="btn-primario">Imprimir</button>
-          <button id="btn-volver" class="btn-secundario">Volver a Lista</button>
-        </div>
-        <div class="new-info-section mt-6">
-          <label for="nueva-nota" class="form-label">Agregar una Nota</label>
-          <textarea id="nueva-nota" class="form-textarea" placeholder="Escribe tu nota aquí..."></textarea>
-        </div>
-        <div class="new-info-section mt-6">
-          <label for="cambiar-estado" class="form-label">Cambiar Estado de Reporte</label>
-          <select id="cambiar-estado" class="form-select">
-            <option value="Abierto">Abierto</option>
-            <option value="En Progreso">En Progreso</option>
-            <option value="Cerrado">Cerrado</option>
-            <option value="Archivado">Archivado</option>
-          </select>
-        </div>
-        <div class="mt-6">
-          <button id="btn-notificar" class="btn-primario">Notificar Cambio</button>
-        </div>
-      </div>
-    </section>
+    <!-- Área Central -->
+    <main id="main-content" class="flex-1 p-8 overflow-auto">
+      
+      <!-- Detalles de Reporte -->
+      <section id="seccion-detalle" v-if="vista === 'detalle'">
+        <div class="form-card">
+          <h2 class="form-titulo">
+            Detalle del Reporte #{{ reporteSeleccionado?.id_reporte || '---' }}
+          </h2>
 
-    <!-- Estadísticas (oculto por defecto) -->
-    <section id="seccion-estadisticas" class="hidden">
-      <h1 class="text-3xl font-bold mb-6">Estadísticas</h1>
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div id="detalle-info" class="mb-6">
+            <p><strong>Estado:</strong> {{ reporteSeleccionado.estado }}</p>
+            <p><strong>Fecha de creación:</strong> {{ reporteSeleccionado.fecha_creacion }}</p>
+            <p><strong>Descripción:</strong> {{ reporteSeleccionado.detalle }}</p>
+          </div>
+
+          <!-- Evidencias -->
+          <div class="mb-6" v-if="evidenciasDelReporte.length > 0">
+            <h3 class="text-lg font-semibold mb-2">Evidencias</h3>
+            <div class="grid grid-cols-2 gap-4">
+              <template v-for="(ev, index) in evidenciasDelReporte">
+                <div :key="index">
+                  <template v-if="ev.mime.startsWith('image/')">
+                    <img :src="'data:' + ev.mime + ';base64,' + ev.base64" :alt="ev.filename" class="max-w-full rounded shadow" />
+                  </template>
+
+                  <template v-else-if="ev.mime === 'application/pdf'">
+                    <iframe :src="'data:' + ev.mime + ';base64,' + ev.base64" class="w-full h-64" frameborder="0"></iframe>
+                  </template>
+
+                  <template v-else>
+                    <p>{{ ev.filename }} (no se puede mostrar)</p>
+                  </template>
+                </div>
+              </template>
+            </div>
+          </div>
+
+          <div class="contenedor-botones-principal">
+            <button @click="window.print()" class="btn-primario">Imprimir</button>
+            <button @click="vista = 'reportes'" class="btn-secundario">Volver a Lista</button>
+          </div>
+
+          <div class="new-info-section">
+            <label for="nueva-nota" class="form-label">Agregar una Nota</label>
+            <textarea
+              id="nueva-nota"
+              class="form-textarea"
+              placeholder="Escribe tu nota aquí..."
+              v-model="nota"
+            ></textarea>
+          </div>
+
+          <div class="new-info-section">
+            <label for="cambiar-estado" class="form-label">Cambiar Estado de Reporte</label>
+            <select
+              id="cambiar-estado"
+              class="form-select"
+              v-model="nuevoEstado"
+            >
+              <option value="Abierto">Abierto</option>
+              <option value="En Progreso">En Progreso</option>
+              <option value="Cerrado">Cerrado</option>
+              <option value="Archivado">Archivado</option>
+            </select>
+          </div>
+
+          <div class="mt-6">
+            <button @click="guardarCambios" class="btn-primario">Guardar</button>
+          </div>
+        </div>
+      </section>
+
+
+      <!-- Estadísticas -->
+      <section id="seccion-estadisticas" v-else-if="vista === 'stats'">
+      <h1 class="form-titulo mb-6">Estadísticas</h1>
+
+      <!-- Totales principales -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
         <div class="form-card text-center">
           <h3 class="text-xl font-semibold mb-2">Total Reportes</h3>
-          <p class="text-3xl">256</p>
+          <p class="text-3xl">{{ stats.total }}</p>
         </div>
         <div class="form-card text-center">
-          <h3 class="text-xl font-semibold mb-2">Reportes Cambiados</h3>
-          <p class="text-3xl">124</p>
+          <h3 class="text-xl font-semibold mb-2">Tipos de Reporte</h3>
+          <ul>
+            <li v-for="(cantidad, tipo) in stats.porTipo" :key="tipo">
+              {{ tipo }}: {{ cantidad }}
+            </li>
+          </ul>
         </div>
         <div class="form-card text-center">
-          <h3 class="text-xl font-semibold mb-2">Reportes Archivados</h3>
-          <p class="text-3xl">48</p>
+          <h3 class="text-xl font-semibold mb-2">Estados</h3>
+          <ul>
+            <li v-for="(cantidad, estado) in stats.porEstado" :key="estado">
+              {{ estado }}: {{ cantidad }}
+            </li>
+          </ul>
         </div>
       </div>
+
+      <!-- Agrupado por mes -->
+      <div class="form-card">
+        <h3 class="text-xl font-semibold mb-4 text-center">Reportes por Mes</h3>
+        <ul class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+          <li v-for="(cantidad, mes) in stats.porMes" :key="mes" class="text-center bg-gray-100 p-4 rounded shadow">
+            <p class="font-medium">{{ mes }}</p>
+            <p class="text-2xl">{{ cantidad }}</p>
+          </li>
+        </ul>
+      </div>
     </section>
-  </main>
-</div>
 
-  <!-- Script de interacción (igual al anterior) -->
+
+      <!-- Lista de Reportes -->
+      <section id="seccion-reportes" v-else>
+        <h1 class="form-titulo mb-6">Reportes de Casos</h1>
+        <div class="overflow-x-auto">
+          <table class="w-full table-auto form-card">
+            <thead class="bg-[var(--color-fondo-medio)]">
+              <tr>
+                <th class="px-4 py-2 text-left">ID</th>
+                <th class="px-4 py-2 text-left">Estado</th>
+                <th class="px-4 py-2 text-left">Fecha de Creación</th>
+                <th class="px-4 py-2 text-left">Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="border-b hover:bg-[var(--color-fondo-claro)]" v-for="reporte in reportes" :key="reporte">
+                  <td class="px-4 py-2">{{reporte.id_reporte}}</td>
+                  <td class="px-4 py-2"><span class="report-status">{{estados[reporte.estado_reporte]}}</span></td>
+                  <td class="px-4 py-2">{{reporte.fecha_suceso.split(" ")[0]}}</td>
+                  <td class="px-4 py-2">
+                    <button class="text-[var(--color-texto-enlace)] hover:underline detalle-btn" @click="verDetalle(reporte.id_reporte)">
+                      Ver Detalles
+                    </button>
+                  </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- Script de interacción -->
   <script src="https://unpkg.com/petite-vue"></script>
-  <script  type="module">
-      import { componente } from './components/componente_dashboardjs';
+  <script type="module">
+    import { componente } from './components/componente_dashboard.js';
 
-      window.petiteVueApp = PetiteVue.createApp({
-          componente_dashboard: componente
-      }).mount();
+    window.petiteVueApp = PetiteVue.createApp({
+      componente_dashboard: componente
+    }).mount();
 
-      console.log("Petite Vue app initialized and mounted."); 
+    console.log("Petite Vue app initialized and mounted."); 
   </script>
 </body>
 </html>
