@@ -16,11 +16,6 @@ dics_tipos_evidencia = {"PDF": 1, "JPEG": 2, "PNG": 3}
 
 if __name__ == '__main__':
     app.run()
-
-@app.get("/")
-def prom(): 
-    return "<h1>VISTA PREDETERMINADA DE API BACKEND SAFEREPORT</h1>"
-
 @app.post("/api/report")
 def create_report():
     data = request.get_json()
@@ -38,7 +33,7 @@ def create_report():
 
     if not all([abuse_type, description, location, date_approx]):
         return jsonify({"error": "Faltan campos requeridos"}), 400
-    
+
     if(abuse_type == None or description == None or location == None or date_approx == None):
         return jsonify({"error": "Faltan campos requeridos"}), 400
 
@@ -62,63 +57,55 @@ def create_report():
         id_organizacion = resp.data[0]["id_organizaciones"]
 
         # Crear gestor de caso con claves aleatorias
-        gestor_user, gestor_pass = crear_usuario_unico()
-
-        supabase.table("GestoresCasos").insert({
-            "usuario_gestor": gestor_user,
-            "password": gestor_pass,
-            "id_organizacion": id_organizacion
-        }).execute()
-
     resp = supabase.table("Reportes").insert({
         "id_organizacion": id_organizacion,
         "detalle": description,
         "tipo_abuso": abuse_type,
         "estado_reporte": 1,
-        "fecha_suceso": fecha_iso 
+        "fecha_suceso": fecha_iso
     }).execute()
 
     id_reporte = resp.data[0]["id_reporte"]
-    
-    if len(files_json) > 0:
-        for i, filete in enumerate(files_json):
-            filex = None
-            filex = BytesIO(base64.b64decode(filete["content"]))
-            file_bytes = base64.b64decode(filete["content"])
-            setattr(filex, "filename", filete["filename"])
+    if (files_json != None):
+        if len(files_json) > 0:
+            for i, filete in enumerate(files_json):
+                filex = None
+                filex = BytesIO(base64.b64decode(filete["content"]))
+                file_bytes = base64.b64decode(filete["content"])
+                setattr(filex, "filename", filete["filename"])
 
-            mime = magic.Magic(mime = True)
-            mime_type = mime.from_buffer(file_bytes)
-            aceptado = False
-            match(mime_type):
-                case "application/pdf":
-                    aceptado = True
-                    tipo_evidencia = 1
-                case "image/jpeg":
-                    aceptado = True
-                    tipo_evidencia = 2
-                case "image/png":
-                    aceptado = True
-                    tipo_evidencia = 3
-                case _:
-                    aceptado = False
+                mime = magic.Magic(mime = True)
+                mime_type = mime.from_buffer(file_bytes)
+                aceptado = False
+                match(mime_type):
+                    case "application/pdf":
+                        aceptado = True
+                        tipo_evidencia = 1
+                    case "image/jpeg":
+                        aceptado = True
+                        tipo_evidencia = 2
+                    case "image/png":
+                        aceptado = True
+                        tipo_evidencia = 3
+                    case _:
+                        aceptado = False
 
 
-            if(filex != None and aceptado):
-                storage_file_name = f"evidencias/{uuid.uuid4()}_{filete["filename"]}"
-                try:
-                    supabase.storage.from_("safereport.files").upload(storage_file_name, filex.read())
-                    public_url = supabase.storage.from_("safereport.files").get_public_url(storage_file_name)
-                    supabase.table("Evidencias").insert({
-                        "id_reporte": id_reporte,
-                        "tipo_evidencia": tipo_evidencia,
-                        "url_evidencia": public_url
-                    }).execute()
+                if(filex != None and aceptado):
+                    storage_file_name = f"evidencias/{uuid.uuid4()}_{filete["filename"]}"
+                    try:
+                        supabase.storage.from_("safereport.files").upload(storage_file_name, filex.read())
+                        public_url = supabase.storage.from_("safereport.files").get_public_url(storage_file_name)
+                        supabase.table("Evidencias").insert({
+                            "id_reporte": id_reporte,
+                            "tipo_evidencia": tipo_evidencia,
+                            "url_evidencia": public_url
+                        }).execute()
 
-                except Exception as e:
-                    return jsonify({"error": f"Error al subir archivo: {str(e)}"}), 500
-            else:
-                mensaje += f"\nDocumento{i} {filete["filename"][:6]} NO AH SIDO CARGADO"
+                    except Exception as e:
+                        return jsonify({"error": f"Error al subir archivo: {str(e)}"}), 500
+                else:
+                    mensaje += f"\nDocumento{i} {filete["filename"][:6]} NO AH SIDO CARGADO"
 
 
 
@@ -128,7 +115,7 @@ def create_report():
             "detalle": "CREADO",
             "id_reporte": id_reporte
     }).execute()
-    
+
 
     # 5. Insertar credencial de acceso
     codigo_credencial = secrets.token_urlsafe(12)
@@ -170,14 +157,14 @@ def search(credencial):
         return jsonify(reporte_valido)  # No hay reporte
 
     reporte = resp.data
-    
+
     # Organización
     resp = supabase.table("Organizaciones").select("nombre_organizacion").eq(
         "id_organizaciones", reporte["id_organizacion"]
     ).single().execute()
     nombre_org = resp.data["nombre_organizacion"] if resp.data else None
 
-    for key in dics.keys(): 
+    for key in dics.keys():
         if(dics[key] == reporte["tipo_abuso"]):
             tipo_abuso = key
 
@@ -192,7 +179,7 @@ def search(credencial):
             file_path = file_path.split("public")[1].split("/")
             filename = file_path[3]
             file_path = file_path[2] +"/"+ file_path[3]
-            
+
 
             # Descargar el archivo directamente desde Supabase Storage
             file_resp = supabase.storage.from_("safereport.files").download(file_path)
@@ -254,7 +241,7 @@ def update():
         nuevo_estado = 4
 
     detalle_str = response.data[0]['detalle'] if response.data else ""
-    detalle_str += description
+    detalle_str += "\n"+description
     response = supabase.table("Reportes").update({"detalle": detalle_str, "estado_reporte": nuevo_estado}).eq("id_reporte", id_reporte).execute()
 
     supabase.table("ActualizacionesReportes").update({"detalle": "ACTUALIZACION", "fecha": now}).eq("id_reporte", id_reporte).execute()
@@ -263,45 +250,46 @@ def update():
         "fecha_ultimo_uso": now
     }).eq("codigo", credencial).execute()
 
-    if files_json > 0:
-        for i, filete in enumerate(files_json):
-            filex = None
-            filex = BytesIO(base64.b64decode(filete["content"]))
-            file_bytes = base64.b64decode(filete["content"])
-            setattr(filex, "filename", filete["filename"])
+    if(files_json != None):
+        if len(files_json) > 0:
+            for i, filete in enumerate(files_json):
+                filex = None
+                filex = BytesIO(base64.b64decode(filete["content"]))
+                file_bytes = base64.b64decode(filete["content"])
+                setattr(filex, "filename", filete["filename"])
 
-            mime = magic.Magic(mime = True)
-            mime_type = mime.from_buffer(file_bytes)
-            aceptado = False
-            match(mime_type):
-                case "application/pdf":
-                    aceptado = True
-                    tipo_evidencia = 1
-                case "image/jpeg":
-                    aceptado = True
-                    tipo_evidencia = 2
-                case "image/png":
-                    aceptado = True
-                    tipo_evidencia = 3
-                case _:
-                    aceptado = False
+                mime = magic.Magic(mime = True)
+                mime_type = mime.from_buffer(file_bytes)
+                aceptado = False
+                match(mime_type):
+                    case "application/pdf":
+                        aceptado = True
+                        tipo_evidencia = 1
+                    case "image/jpeg":
+                        aceptado = True
+                        tipo_evidencia = 2
+                    case "image/png":
+                        aceptado = True
+                        tipo_evidencia = 3
+                    case _:
+                        aceptado = False
 
 
-            if(filex != None and aceptado):
-                storage_file_name = f"evidencias/{uuid.uuid4()}_{filete["filename"]}"
-                try:
-                    supabase.storage.from_("safereport.files").upload(storage_file_name, filex.read())
-                    public_url = supabase.storage.from_("safereport.files").get_public_url(storage_file_name)
-                    supabase.table("Evidencia").insert({
-                        "id_reporte": id_reporte,
-                        "tipo_evidencia": tipo_evidencia,
-                        "url_evidencia": public_url
-                    }).execute()
+                if(filex != None and aceptado):
+                    storage_file_name = f"evidencias/{uuid.uuid4()}_{filete["filename"]}"
+                    try:
+                        supabase.storage.from_("safereport.files").upload(storage_file_name, filex.read())
+                        public_url = supabase.storage.from_("safereport.files").get_public_url(storage_file_name)
+                        supabase.table("Evidencias").insert({
+                            "id_reporte": id_reporte,
+                            "tipo_evidencia": tipo_evidencia,
+                            "url_evidencia": public_url
+                        }).execute()
 
-                except Exception as e:
-                    return jsonify({"error": f"Error al subir archivo: {str(e)}"}), 500
-            else:
-                extra += f"\nDocumento{i} {filete["filename"][:6]} NO AH SIDO CARGADO"
+                    except Exception as e:
+                        return jsonify({"error": f"Error al subir archivo: {str(e)}"}), 500
+                else:
+                    extra += f"\nDocumento{i} {filete["filename"][:6]} NO AH SIDO CARGADO"
 
     if response.data:
         return jsonify({"mensaje": "success", "extra": extra})
