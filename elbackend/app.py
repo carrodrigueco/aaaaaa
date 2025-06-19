@@ -197,13 +197,17 @@ def search(credencial):
 
     estado_actual = reporte["estado_reporte"]
 
+    actualizaciones = supabase.table("ActualizacionesReportes").select("fecha, detalle").eq(
+        "id_reporte", reporte["id_reporte"]).execute()
+
     return jsonify({
         "descripcion": reporte["detalle"],
         "organizacion": nombre_org,
         "tipo_abuso":  tipo_abuso,
         "evidencias": evidencia_data,
         "estado_reporte": dics_estados_reporte[str(estado_actual)],
-        "fecha_suceso": reporte["fecha_suceso"]
+        "fecha_suceso": reporte["fecha_suceso"],
+        "actualizaciones": actualizaciones
     }), 200
 
 @app.post("/api/update")

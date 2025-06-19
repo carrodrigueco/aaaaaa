@@ -84,7 +84,7 @@
                         />
 
                         <!-- PDF -->
-                        <iframe
+                        <iframe 
                         v-else-if="file.mime.startsWith('application')"
                         :src="`data:${file.mime};base64,${file.content}`"
                         class="w-full h-96 mt-2 border rounded">
@@ -92,11 +92,11 @@
                     </div>
                 </div>
 
-                <div class="details-section" v-if="reportDetails.updates && reportDetails.updates.length > 0">
+                <div class="details-section" v-if="reportDetails.updates.length > 0">
                     <p class="details-title">Historial de Actualizaciones:</p>
                     <ul class="list-disc list-inside text-[var(--color-texto-secundario)] space-y-2">
                         <li v-for="(update, index) in reportDetails.updates" :key="index">
-                            <span class="font-semibold">{{ formatDate(update.date) }}:</span> {{ update.text }}
+                            <span class="font-semibold">{{ formatDate(update.fecha) }}:</span> {{ update.detalle }}
                         </li>
                     </ul>
                 </div>

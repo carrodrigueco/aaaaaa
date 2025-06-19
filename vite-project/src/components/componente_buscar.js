@@ -11,7 +11,7 @@ export const componente_buscar = {
   },
   reportFound: false,
   updated: false,
-  reportDetails: {evidences: []},
+  reportDetails: {evidences: [], updates: []},
   newfiles: [],
   filesLoaded: false,
   searchMessage: { text: '', type: '' },
