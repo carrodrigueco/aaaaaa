@@ -154,7 +154,6 @@ export function fileToBase64(file)
 export function getMimeTypeFromFilename(filename)
 {
     let extension = filename.split('.').pop().toLowerCase();
-    
     const mimeTypes = {
         'jpg': 'image/jpeg',
         'jpeg': 'image/jpeg',
@@ -167,9 +166,7 @@ export function getMimeTypeFromFilename(filename)
         // Agrega más si necesitas
     };
 
-    if(extension.length > 3)
-    {
-        extension = extension.slice(0, 3)
-    }
+    extension = extension.slice(0, -1);
+
     return mimeTypes[extension] || 'application/octet-stream';
 }

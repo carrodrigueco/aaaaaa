@@ -13,8 +13,8 @@
         <!-- Perfil -->
       <div class="p-6 text-center">
         <img src="../public/avatar.png" alt="Foto de perfil" class="w-24 h-24 rounded-full shadow-2xs mx-auto mb-4 object-cover"/>
-        <p class="text-sm text-[var(--color-texto-secundario)]">{{ gestor.organizacion}}</p>
-        <span class="inline-block mt-1 px-2 py-1 bg-[var(--color-acento-principal)] text-white text-xs rounded">{{ gestor?.rol?.trim() || "Gestor de Casos"}}</span>
+        <p class="text-sm text-[var(--color-texto-secundario)]">{{ gestor.organizacion.toUpperCase()}}</p>
+        <span class="cosita">{{ gestor.rol.toUpperCase() || "Gestor de Casos"}}</span>
       </div>
 
         <!-- Navegación -->
@@ -54,6 +54,7 @@
           <div id="detalle-info" class="mb-6">
             <p><strong>Estado:</strong> {{ reporteSeleccionado.estado_reporte }}</p>
             <p><strong>Fecha de creación:</strong> {{ reporteSeleccionado.fecha_suceso }}</p>
+            <p><strong>Tipo de Abuso:</strong> {{ tipos_abuso[reporteSeleccionado.tipo_abuso-1] }}</p>
             <p><strong>Descripción:</strong> {{ reporteSeleccionado.detalle }}</p>
           </div>
 

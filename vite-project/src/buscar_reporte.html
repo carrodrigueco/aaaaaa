@@ -59,17 +59,17 @@
                     </p>
 
                     <p class="details-title">Tipo de Abuso:</p>
-                    <p class="details-text">{{ reportDetails.type || 'No especificado' }}</p>
+                    <p class="details-text">{{ reportDetails.type.toUpperCase() || 'No especificado' }}</p>
                 </div>
 
                 <div class="details-section">
-                    <p class="details-title">Descripción Original:</p>
+                    <p class="details-title">Descripción:</p>
                     <p class="details-text">{{ reportDetails.description || 'No proporcionada' }}</p>
                 </div>
 
                 <div class="details-section">
                     <p class="details-title">Organización relacionada:</p>
-                    <p class="details-text">{{ reportDetails.location || 'No especificada' }}</p>
+                    <p class="details-text">{{ reportDetails.location.toUpperCase() || 'No especificada' }}</p>
                 </div>
                 
                 <p class="details-title">Evidencia adjunta:</p>

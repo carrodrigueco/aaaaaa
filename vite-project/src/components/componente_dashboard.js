@@ -62,7 +62,7 @@ export const componente = {
       .single();
 
     this.gestor = {
-      rol: gestorData.rol,
+      rol: gestorData.rol_org,
       organizacion: extra?.nombre_organizacion?.trim() || "null"
     };
 
@@ -106,7 +106,6 @@ export const componente = {
     this.evidenciasDelReporte = [];
     this.nuevoEstado = this.reporteSeleccionado.estado_reporte;
     this.reporteSeleccionado.estado_reporte = this.estados[this.reporteSeleccionado.estado_reporte-1];
-    console.log(this.reporteSeleccionado.estado_reporte);
     // Obtener lista de evidencias del reporte
     const { data: evidencias, error: errorEvidencias } = await supabase
       .from('Evidencias')
@@ -164,7 +163,6 @@ export const componente = {
       }
 
     }
-    console.log(this.evidenciasDelReporte);
   },
 
   async guardarCambios()
@@ -174,19 +172,20 @@ export const componente = {
     const { id_reporte } = this.reporteSeleccionado;
 
     const updates = {
-      detalle: this.nota,
+      detalle: this.nota + "\n ESTADO CAMBIADO A "+ this.estados[parseInt(this.nuevoEstado)-1],
       fecha: new Date().toISOString(),
       id_reporte: id_reporte
     };
 
+    
+    const { error2 } = await supabase
+    .from('Reportes')
+    .update({estado_reporte: parseInt(this.nuevoEstado)})
+    .eq('id_reporte', id_reporte);
+    
     const { error } = await supabase
       .from('ActualizacionesReportes')
       .insert(updates);
-
-    const { error2 } = await supabase
-      .from('Reportes')
-      .update({estado_reporte: parseInt(this.nuevoEstado)})
-      .eq('id_reporte', id_reporte);
 
     if (error || error2)
     {
@@ -205,6 +204,12 @@ export const componente = {
 
   async calcularEstadisticas()
   {
+    this.stats = {
+      total: 0,
+      porTipo: {},
+      porEstado: {},
+      porMes: {}
+    };
     this.stats.total = this.reportes.length;
 
     for (const r of this.reportes)

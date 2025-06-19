@@ -236,3 +236,6 @@
 .button-dashboard{
     @apply w-full text-left px-6 py-3 hover:bg-[var(--color-acento-hover)] transition-colors duration-200
 }
+.cosita{
+    @apply inline-block mt-1 px-2 py-1 bg-[var(--color-acento-principal)] text-white text-xs rounded
+}

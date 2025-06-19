@@ -19,7 +19,8 @@ export const componente_buscar = {
 
   async sendUpdate()
   {
-    if (!this.newUpdateText.trim()) {
+    if (!this.newUpdateText.trim())
+    {
       this.updateMessage = {
         text: "El texto de actualización no puede estar vacío.",
         type: "error"
@@ -47,9 +48,13 @@ export const componente_buscar = {
     }
     if(res.mensaje == 'success')
     {
-      this.reportDetails.evidences = [];
+      this.searchCredential = '';
+      this.newUpdateText = '';
+      this.reportDetails = {evidences: []};
+      this.newfiles =  [];
     }
   },
+  
   async searchReport()
   {
     this.searchMessage.text = '';
