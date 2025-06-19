@@ -124,7 +124,6 @@ export const componente = {
     {
       const filePath = evidencia.url_evidencia.split("files")[1].slice(1).split("?")[0]; // Ej: 'evidencias/imagen123.txt'
       const filename = filePath.split('/')[1];
-      const mimo = getMimeTypeFromFilename(filename);
 
       try
       {
@@ -133,21 +132,24 @@ export const componente = {
           .from('safereport.files')
           .download(filePath);
 
-        if (downloadError) {
+        if (downloadError)
+        {
           console.error(`Error descargando ${filePath}:`, downloadError.message);
           return; // o continue si estás en un bucle
         }
 
         // Convertir Blob a base64 con FileReader
+        const mime = getMimeTypeFromFilename(filename); 
         const reader = new FileReader();
 
         reader.onload = () => {
-          const result = reader.result; // ya es 'data:<mime>;base64,...'
+          // ya es 'data:<mime>;base64,...'
+          const base64String = reader.result.replace(/^data:.*?;base64,/, `data:${mime};base64,`);
 
           this.evidenciasDelReporte.push({
             filename: filename,
-            mime: mimo,
-            base64: result,
+            mime: mime,
+            base64: base64String,
             index: index++
           });
         };

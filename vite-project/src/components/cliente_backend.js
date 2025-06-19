@@ -166,7 +166,10 @@ export function getMimeTypeFromFilename(filename)
         // Agrega más si necesitas
     };
 
-    extension = extension.slice(0, -1);
-
+    if(extension.includes("?"))
+    {
+        extension = extension.slice(0, -1);
+    }
+    
     return mimeTypes[extension] || 'application/octet-stream';
 }
